@@ -1,0 +1,9 @@
+aiohttp==3.8.1
+alembic==1.7.5
+APScheduler==3.8.1
+configparser==5.2.0
+gino==1.0.1
+psycopg2==2.9.3
+python-dotenv==0.19.1
+tabulate==0.8.9
+websockets==10.0
