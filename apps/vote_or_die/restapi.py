@@ -28,4 +28,4 @@ class RestAPI(RestAPIBase):
             }]
         })
 
-        return await self.make_request('/chat.postMessage', 'post', msg)
+        return await self.make_request(settings.CHAT_MESSAGE_POST_REQUEST, 'post', msg)
