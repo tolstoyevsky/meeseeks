@@ -2,19 +2,23 @@
 
 import asyncio
 import json
+from types import ModuleType
+from typing import Generic, Type, TypeVar
+from urllib.parse import ParseResult, urljoin, urlparse
 
 import websockets
 from aiohttp import ClientResponseError
+from websockets import WebSocketClientProtocol  # pylint: disable=no-name-in-module
 from websockets.exceptions import ConnectionClosedOK
 
 from meeseeks import settings
-from meeseeks.context import LoginCtx
+from meeseeks.context import Context, ChangedRoomMessageCtx, LoginCtx
 from meeseeks.exceptions import (
     AbortCommandExecution,
     BadConfigure,
     CommandDoesNotExist,
     LogInFailed,
-    SerializerError
+    SerializerError,
 )
 from meeseeks.logger import LOGGER
 from meeseeks.restapi import RestAPI
@@ -24,48 +28,50 @@ from meeseeks.serializers import ContextSerializer
 _ACCESS_DENIED_MSG = 'Access denied, not enough permissions'
 _COMMAND_DOES_NOT_EXIST = 'Requested command does not exist'
 
+_T = TypeVar('_T', bound='MeeseeksCore')
 
-class MeeseeksCore:
+
+class MeeseeksCore(Generic[_T]):
     """Provide basic functionality for building applications. """
 
-    app_name = None
+    app_name: str = ''
 
-    _domain = settings.HOST.split('://')[1]
-    _certificate = 's' if settings.HOST.split('://')[0].endswith('s') else ''
-    _headers = {}
-    _restapi = None
-    _rtapi = None
-    _token = None
-    _user_id = None
-    _apps = None
+    _url: ParseResult = urlparse(settings.ROCKET_CHAT_API)
+    _headers: dict[str, str] = {}
+    _restapi: RestAPI
+    _rtapi: RealTimeAPI
+    _token: str = ''
+    _user_id: str = ''
+    _apps: list = []
 
-    def __init__(self):
-        self._ctx = None
-        self._request = None
-        self._websocket = None
+    def __init__(self) -> None:
+        self._ctx: Context | None = None
+        self._request: str = ''
+        self._websocket: WebSocketClientProtocol = WebSocketClientProtocol
+        self._websocket_protocol: str = 'wss' if self._url.scheme == 'https' else 'ws'
 
-    async def check_bot_permissions(self):
+    async def check_bot_permissions(self) -> None:
         """Check if Meeseeks has valid permission on Rocket.Chat. """
 
-        server_users = await self._restapi.get_users()
+        server_users: dict[str, dict] = await self._restapi.get_users()
         if 'roles' not in server_users[self._user_id]:
             raise BadConfigure('Give Meeseeks permission "View Full Other User Info"'
                                'on Rocket.Chat')
 
     @staticmethod
-    def check_app_name(app):
+    def check_app_name(app: _T) -> None:
         """Check if attribute app_name in applications classes. """
 
         if not app.app_name:
             raise NotImplementedError(f'Implement attribute "app_name" '
                                       f'in {app.__class__.__name__} class.')
 
-    async def bot_configure(self):
+    async def bot_configure(self) -> None:
         """Check if Meeseeks configured correctly. """
 
         await self.check_bot_permissions()
 
-    async def login(self):
+    async def login(self) -> bool:
         """Trying to log in Meeseeks to Rocket.Chat server. """
 
         await self._rtapi.connect()
@@ -74,10 +80,10 @@ class MeeseeksCore:
             await self._rtapi.login()
             try:
                 for _ in range(0, 4):
-                    raw_context = json.loads(await self._websocket.recv())
+                    raw_context: WebSocketClientProtocol = json.loads(await self._websocket.recv())
 
                     try:
-                        serializer = ContextSerializer(
+                        serializer: ContextSerializer = ContextSerializer(
                             raw_context, raw_context['msg'], raw_context['id'],
                         )
                         self._ctx = serializer.serialize()
@@ -104,35 +110,43 @@ class MeeseeksCore:
 
         raise LogInFailed(f'{self.__class__.__name__}: Cannot log in to Rocket.Chat server')
 
-    async def process(self, _ctx):
+    async def process(self, ctx: ChangedRoomMessageCtx) -> None:
         """Method for its further redefinition to implement the Meeseeks app functionality. """
 
     @staticmethod
-    def _apps_receive(name):
+    def _apps_receive(name: str) -> Type[_T] | None:
         """Receive application class. """
 
-        components = name.split('.')
-        module = __import__(components[0])
+        components: list[str] = name.split('.')
+        module: ModuleType = __import__(components[0])
+        app_class: Type[_T] | None = None
 
         for comp in components[1:]:
-            module = getattr(module, comp)
+            app_class = getattr(module, comp)
 
-        return module
+        return app_class
 
-    def _init_apps(self):
+    def _init_apps(self) -> list[_T]:
         """Return list of apps classes. """
 
-        return [self._apps_receive(app)(**self.__dict__) for app in settings.INSTALLED_APPS]
+        app_instances: list = []
+        for app in settings.INSTALLED_APPS:
+            app_class = self._apps_receive(app)
+            if app_class:
+                app_instances.append(app_class(**self.__dict__))
 
-    async def loop(self):
+        return app_instances
+
+    async def loop(self) -> None:
         """Method is intended for calling in endless loop to process Rocket.Chat callbacks. """
 
-        raw_context = json.loads(await self._websocket.recv())
+        raw_context: WebSocketClientProtocol = json.loads(await self._websocket.recv())
         if raw_context.get('msg') == 'ping':
-            return await self._rtapi.pong()
+            await self._rtapi.pong()
+            return None
 
         try:
-            serializer = ContextSerializer(
+            serializer: ContextSerializer = ContextSerializer(
                 raw_context, raw_context['msg'], raw_context['collection'],
             )
         except (KeyError, ValueError, ):
@@ -143,36 +157,41 @@ class MeeseeksCore:
         except SerializerError:
             return None
 
-        exc_counter = 0
-        for app in self._apps:
-            try:
-                await app.process(self._ctx)
-            except AbortCommandExecution:
-                await self._restapi.write_msg(_ACCESS_DENIED_MSG, self._ctx.room.id)
-                break
-            except CommandDoesNotExist:
-                exc_counter += 1
+        if isinstance(self._ctx, ChangedRoomMessageCtx):
+            exc_counter = 0
+            for app in self._apps:
+                try:
+                    await app.process(self._ctx)
+                except AbortCommandExecution:
+                    await self._restapi.write_msg(_ACCESS_DENIED_MSG, self._ctx.room.id)
+                    break
+                except CommandDoesNotExist:
+                    exc_counter += 1
 
-        if exc_counter == len(self._apps):
-            await self._restapi.write_msg(_COMMAND_DOES_NOT_EXIST, self._ctx.room.id)
+            if exc_counter == len(self._apps):
+                await self._restapi.write_msg(_COMMAND_DOES_NOT_EXIST, self._ctx.room.id)
 
-    async def setup(self):
+    async def setup(self) -> None:
         """Add functional in app after login. """
 
         raise NotImplementedError(f'Implement method setup in {self.__class__.__name__}.')
 
-    async def run(self):
+    async def run(self) -> None:
         """Entry point for run Meeseeks app. """
 
-        websocket_url = f'ws{self._certificate}://{self._domain}/websocket'
+        websocket_url: str = urljoin(f'{self._websocket_protocol}://{self._url.netloc}',
+                                     'websocket')
         async with websockets.connect(websocket_url) as websocket:
             self._websocket = websocket
+            if not self._websocket:
+                raise Exception
+
             self._rtapi = RealTimeAPI(self._request, self._websocket)
             self._restapi = RestAPI(self._headers)
 
             await self.login()
 
-            self._apps = self._init_apps()
+            self._apps: list[_T] = self._init_apps()
             for app in self._apps:
                 self.check_app_name(app)
                 await app.setup()
