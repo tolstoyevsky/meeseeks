@@ -10,36 +10,37 @@ class CommandsMixin(CommandsBase, ABC):
     """Contains methods for running Meeseeks commands on client Rocket.Chat. """
 
     @cmd(name='get rooms info', permissions=['admin'], description='__doc__')
-    async def cmd_rooms_info(self):
-        """Sends information about rooms. """
+    async def cmd_rooms_info(self) -> None:
+        """Sends information about rooms in Rocket.Chat. """
 
-        rooms = await self._restapi.get_rooms(command=True)
-        title = 'Hi, here is the information about the rooms :point_down:\n'
-        rooms_list = ''
+        rooms: dict[str, str] | list[str] = await self._restapi.get_rooms(command=True)
+        title: str = 'Hi, here is the information about the rooms :point_down:\n'
+        response: str = ''
 
-        for key, name in rooms.items():
-            rooms_list = rooms_list + f'\n**{key}** : {name}'
+        if isinstance(rooms, dict):
+            for key, name in rooms.items():
+                response = response + f'\n**{key}** : {name}'
 
-        await self._write_command_msg(title + rooms_list)
+            await self._write_command_msg(title + response)
 
     @cmd(name='get users info', permissions=['admin'], description='__doc__')
-    async def cmd_users_info(self):
+    async def cmd_users_info(self) -> None:
         """Sends information about users. """
 
-        users = await self._restapi.get_users()
-        title = 'Hi, here is the information about the users :point_down:\n'
-        users_list = ''
+        users: dict[str, dict] = await self._restapi.get_users()
+        title: str = 'Hi, here is the information about the users :point_down:\n'
+        response: str = ''
 
         for user in users.values():
-            users_list = users_list + f'\n**{user["_id"]}** : {user["name"]}'
+            response = response + f'\n**{user["_id"]}** : {user["name"]}'
 
-        await self._write_command_msg(title + users_list)
+        await self._write_command_msg(title + response)
 
 
 class DialogsMixin(DialogsBase, ABC):
     """Contains methods for communication Rocket.Chat user and Meeseeks. """
 
-    async def dialog_hello(self, message):
+    async def dialog_hello(self, message: str) -> None:
         """Return response to the received direct message "hello". """
 
         if message == 'hello':

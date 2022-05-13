@@ -11,7 +11,7 @@ load_dotenv()
 # Standard settings
 ALIAS = os.getenv('ALIAS')
 
-HOST = os.environ['HOST']
+ROCKET_CHAT_API = os.environ['ROCKET_CHAT_API']
 
 PASSWORD = os.environ['PASSWORD']
 

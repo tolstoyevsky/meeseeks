@@ -88,7 +88,7 @@ class HappyBirthder(CommandsMixin, DialogsMixin, MeeseeksCore):
         async with ClientSession() as session:
             for user in server_users.values():
                 if self.check_user_status(user):
-                    url = urljoin(settings.HOST, f'/avatar/{user["username"]}')
+                    url = urljoin(settings.ROCKET_CHAT_API, f'/avatar/{user["username"]}')
                     response_raw = await session.get(url)
                     if response_raw.content_type == 'image/svg+xml':
                         persons_without_avatar += f'\n@{user["username"]}'

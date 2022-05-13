@@ -5,7 +5,7 @@ import asyncio
 from meeseeks.core import MeeseeksCore
 
 
-async def main():
+async def main() -> None:
     """Collect and run applications. """
 
     await MeeseeksCore().run()
