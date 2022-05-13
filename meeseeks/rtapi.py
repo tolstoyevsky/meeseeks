@@ -1,6 +1,7 @@
 """Module containing functionality for interaction with Rocket.Chat REST API. """
 
 import json
+from websockets import WebSocketClientProtocol  # pylint: disable=no-name-in-module
 
 from meeseeks import settings
 
@@ -8,11 +9,11 @@ from meeseeks import settings
 class RealTimeAPI:
     """Provide functionality for interaction with Rocket.Chat RealTime API. """
 
-    def __init__(self, request, websocket):
-        self._request = request
-        self._websocket = websocket
+    def __init__(self, request: str, websocket: WebSocketClientProtocol):
+        self._request: str = request
+        self._websocket: WebSocketClientProtocol = websocket
 
-    def connect(self):
+    def connect(self) -> WebSocketClientProtocol:
         """Connects to RealtimeAPI. """
 
         self._request = json.dumps({
@@ -23,7 +24,7 @@ class RealTimeAPI:
 
         return self._websocket.send(self._request)
 
-    def login(self):
+    def login(self) -> WebSocketClientProtocol:
         """Login user. """
 
         self._request = json.dumps({
@@ -38,7 +39,7 @@ class RealTimeAPI:
 
         return self._websocket.send(self._request)
 
-    def pong(self):
+    def pong(self) -> WebSocketClientProtocol:
         """Answers to 'ping' message. """
 
         self._request = json.dumps({'msg': 'pong'})
@@ -46,7 +47,7 @@ class RealTimeAPI:
         return self._websocket.send(self._request)
 
     @staticmethod
-    def stream_room_messages_msg(rid):
+    def stream_room_messages_msg(rid: str) -> str:
         """Subscribes to certain room. """
 
         return json.dumps({
@@ -56,7 +57,7 @@ class RealTimeAPI:
             'params': [rid, True],
         })
 
-    async def stream_all_messages(self):
+    async def stream_all_messages(self) -> WebSocketClientProtocol:
         """Subscribes to all messages. """
 
         await self._websocket.send(json.dumps({
@@ -67,7 +68,7 @@ class RealTimeAPI:
             })
         )
 
-    async def stream_room_messages(self, rids: list):
+    async def stream_room_messages(self, rids: list[str]) -> None:
         """Subscribes to given room list. """
 
         for rid in rids:
