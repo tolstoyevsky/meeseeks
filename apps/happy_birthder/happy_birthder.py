@@ -80,6 +80,26 @@ class HappyBirthder(CommandsMixin, DialogsMixin, MeeseeksCore):
         self.gif_receiver = GifReceiver(settings.TENOR_API_KEY)
         self.scheduler = AsyncIOScheduler(settings.SCHEDULER_SETTINGS)
 
+    async def check_users_avatars(self):
+        """Checks if the users set their avatars. """
+
+        persons_without_avatar = ''
+        server_users = await self._restapi.get_users()
+        for user in server_users.values():
+            if self.check_user_status(user):
+                url = urljoin(settings.HOST, f'/avatar/{user["username"]}')
+                async with ClientSession() as session:
+                    response_raw = await session.request('get', url=url)
+                if response_raw.content_type == 'image/svg+xml':
+                    persons_without_avatar += f'\n@{user["username"]}'
+                    await self._restapi.write_msg(settings.NOTIFY_SET_AVATAR, user['_id'])
+
+        if persons_without_avatar and settings.BIRTHDAY_LOGGING_CHANNEL:
+            await self._restapi.write_msg(
+                settings.PERSONS_WITHOUT_AVATAR_RESPONSE + persons_without_avatar,
+                settings.BIRTHDAY_LOGGING_CHANNEL,
+            )
+
     async def update_users(self):
         """Receive all user in chat and updates information in database. """
 
@@ -166,6 +186,9 @@ class HappyBirthder(CommandsMixin, DialogsMixin, MeeseeksCore):
         await self.update_users()
         await self.check_dates()
 
+        if settings.CHECK_USERS_AVATARS:
+            await self.check_users_avatars()
+
     @staticmethod
     def parse_crontab(crontab: str) -> dict[str, str]:
         """Return parsed params from given crontab string. """
@@ -186,7 +209,7 @@ class HappyBirthder(CommandsMixin, DialogsMixin, MeeseeksCore):
 
         self.scheduler.add_job(
             self.scheduler_jobs,
-            id='check_dates',
+            id='schedule',
             coalesce=False,
             max_instances=1,
             trigger='cron',

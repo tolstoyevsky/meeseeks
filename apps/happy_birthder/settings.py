@@ -21,6 +21,8 @@ BIRTHDAY_CHANNEL_TTL = int(os.getenv('BIRTHDAY_CHANNEL_TTL', '3'))
 
 BIRTHDAY_LOGGING_CHANNEL = os.getenv('BIRTHDAY_LOGGING_CHANNEL')
 
+CHECK_USERS_AVATARS = os.getenv('CHECK_USERS_AVATARS', '').lower() == 'true'
+
 CREATE_BIRTHDAY_CHANNELS = os.getenv('CREATE_BIRTHDAY_CHANNELS', '').lower() == 'true'
 
 COMPANY_NAME = os.environ['COMPANY_NAME']
@@ -28,6 +30,11 @@ COMPANY_NAME = os.environ['COMPANY_NAME']
 GREETINGS_RESPONSE = os.getenv(
     'GREETINGS_RESPONSE',
     f'Welcome to {COMPANY_NAME}!'
+)
+
+NOTIFY_SET_AVATAR = os.getenv(
+    'NOTIFY_SET_AVATAR',
+    "Oh, I see you didn't set your avatar!\nPlease, do it as soon as possible. :grin:",
 )
 
 NOTIFY_SET_BIRTH_DATE = os.getenv(
@@ -40,6 +47,11 @@ NUMBER_OF_DAYS_IN_ADVANCE = int(os.getenv('NUMBER_OF_DAYS_IN_ADVANCE', '7'))
 
 PERSONS_WITHOUT_BIRTHDAY_RESPONSE = os.getenv('PERSONS_WITHOUT_BIRTHDAY_RESPONSE',
                                               'These persons did not provide date of birth.')
+
+PERSONS_WITHOUT_AVATAR_RESPONSE = os.getenv(
+    'PERSONS_WITHOUT_AVATAR_RESPONSE',
+    "These users didn't set their avatars.",
+)
 
 SET_BIRTHDAY_RESPONSE = os.getenv(
     'SET_BIRTHDAY_RESPONSE',
