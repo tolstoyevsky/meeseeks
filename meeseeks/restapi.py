@@ -19,6 +19,7 @@ class RestAPI:
         url = settings.HOST + '/api/v1' + restapi_method
         async with ClientSession() as session:
             response_raw = await session.request(method, url=url, headers=self._headers, data=data)
+            response_raw.raise_for_status()
 
             return await response_raw.json()
 
