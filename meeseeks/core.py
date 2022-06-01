@@ -4,6 +4,7 @@ import asyncio
 import json
 
 import websockets
+from aiohttp import ClientResponseError
 from websockets.exceptions import ConnectionClosedOK
 
 from meeseeks import settings
@@ -179,6 +180,8 @@ class MeeseeksCore:
             while True:
                 try:
                     await self.loop()
+                except ClientResponseError as exc:
+                    LOGGER.error(exc)
                 except ConnectionClosedOK:
                     LOGGER.info('ConnectionClosedOk, relogin ...')
                     self._websocket = await websockets.connect(websocket_url)
