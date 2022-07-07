@@ -57,6 +57,26 @@ class RestAPI:
 
         return rooms_dict
 
+    async def get_group_users(self, group_name: str) -> list[dict[str, str]]:
+        """Receive list users of group. """
+
+        response = await self.make_request(
+            f'{settings.GROUPS_MEMBERS_GET_REQUEST}?roomName={group_name}', 'get'
+        )
+        users_list: list[dict[str, str]] = response['members']
+
+        return users_list
+
+    async def invite_user_to_group(self, group_id: str, user_id: str) -> dict[str, Any]:
+        """Invite one user or bulk users to group. """
+
+        msg: str = json.dumps({
+            'roomId': group_id,
+            'userId': user_id,
+        })
+
+        return await self.make_request(f'{settings.GROUPS_INVITE_POST_REQUEST}', 'post', msg)
+
     async def write_msg(self, text: str, rid: str) -> dict[str, Any]:
         """Sends message to chat. """
 
