@@ -20,7 +20,7 @@ class CommandsMixin(CommandsBase, ABC):
         """Check user status for processing data. """
 
         return (user['active'] and 'guest' not in user['roles'] and
-                'bot' not in user['roles'])
+                'bot' not in user['roles'] and 'app' not in user['roles'])
 
     @cmd(name='set users birthday', permissions=['admin'], description='__doc__')
     async def cmd_set_users_birthday(self):
