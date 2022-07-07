@@ -170,9 +170,10 @@ class HappyBirthder(CommandsMixin, DialogsMixin, MeeseeksCore):
     def parse_crontab(crontab: str) -> dict[str, str]:
         """Return parsed params from given crontab string. """
 
-        minute, hour, day, month, day_of_week = crontab.split()
+        second, minute, hour, day, month, day_of_week = crontab.split()
 
         return {
+            'second': second,
             'minute': minute,
             'hour': hour,
             'day': day,
