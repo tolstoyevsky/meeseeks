@@ -46,24 +46,16 @@ class RestAPI:
 
         return user
 
-    async def get_rooms(self, command: bool = False) -> dict[str, str] | list[str]:
-        """Receive all rooms ids. """
+    async def get_rooms(self) -> dict[str, str]:
+        """Receive dict of rooms names and ids. """
 
         response = await self.make_request(settings.ROOMS_GET_REQUEST, 'get')
-
-        if command:
-            rooms_dict: dict[str, str] = {}
-            for room in response['update']:
-                if 'name' in room:
-                    rooms_dict[room['name']] = room['_id']
-
-            return rooms_dict
-
-        rooms_list: list[str] = []
+        rooms_dict: dict[str, str] = {}
         for room in response['update']:
-            rooms_list.append(room['_id'])
+            if 'name' in room:
+                rooms_dict[room['name']] = room['_id']
 
-        return rooms_list
+        return rooms_dict
 
     async def write_msg(self, text: str, rid: str) -> dict[str, Any]:
         """Sends message to chat. """
