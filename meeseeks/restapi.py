@@ -95,8 +95,8 @@ class RestAPI:
 
         return await self.make_request(settings.CHAT_REACT_POST_REQUEST, 'post', msg)
 
-    async def create_private_room(self, name: str, users: list) -> dict[str, Any]:
-        """Create private room. """
+    async def create_group(self, name: str, users: list) -> dict[str, Any]:
+        """Create group. """
 
         msg: str = json.dumps({
             'name': name,
@@ -105,8 +105,8 @@ class RestAPI:
 
         return await self.make_request(settings.GROUPS_CREATE_POST_REQUEST, 'post', msg)
 
-    async def delete_private_room(self, name: str) -> dict[str, Any]:
-        """Delete private room. """
+    async def delete_group(self, name: str) -> dict[str, Any]:
+        """Delete group. """
 
         msg: str = json.dumps({
             'roomName': name,
