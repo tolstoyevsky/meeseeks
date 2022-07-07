@@ -58,7 +58,7 @@ The functionality of the script is divided into two parts: handling birthdays an
 | Parameter | Description | Default |
 |-----------|-------------|---------|
 | `ALIAS` | Name of your bot | |
-| `HOST` | Rocket.Chat address | |
+| `ROCKET_CHAT_API` | Rocket.Chat address | |
 | `PASSWORD` | Password of your bot | |
 | `USER_NAME` | User name of your bot | |
 | `CONNECT_ATTEMPTS` | Number of attempts to start on failure | |
