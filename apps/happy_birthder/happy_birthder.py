@@ -116,69 +116,104 @@ class HappyBirthder(CommandsMixin, DialogsMixin, MeeseeksCore):
                     user_fwd = datetime.strptime(user_info['createdAt'][:10], '%Y-%m-%d').date()
                     await user_in_base.update(fwd=user_fwd).apply()
 
-    async def check_dates(self):
-        """Checks all birth days, requests missing and notifies about closest. """
+    async def prepare_users_info(self, users):
+        """Return users info to use for checking dates. """
 
-        users = await User.query.gino.all()
-        persons_without_date = ''
-
+        users_info = []
+        today = date.today()
         for user in users:
             user_id = user.user_id
-            if not self.check_user_status(await self._restapi.get_user_info(user_id)):
+            if not self.check_user_status(await self._restapi.get_user_info(user.user_id)):
                 continue
 
             name = user.name
             birth_date = user.birth_date
+            birthday_group_name = f'birthday-of-{name}'
             fwd = user.fwd
             users_for_mailing = {
                 user.user_id: user.name for user in users if user.user_id != user_id and
                 self.check_user_status(await self._restapi.get_user_info(user.user_id))
             }
-            today = date.today()
-            tomorrow = today + timedelta(days=1)
-            channel_ttl = (birth_date + timedelta(days=settings.BIRTHDAY_CHANNEL_TTL) if birth_date
-                           else None)
+            channel_ttl = (
+                birth_date + timedelta(days=settings.BIRTHDAY_CHANNEL_TTL) if birth_date else None
+            )
             days_in_advance = today + timedelta(days=settings.NUMBER_OF_DAYS_IN_ADVANCE)
 
-            if birth_date is None:
-                await self._restapi.write_msg(settings.NOTIFY_SET_BIRTH_DATE, user_id)
-                persons_without_date = persons_without_date + f'\n@{name}'
-            elif birth_date.day == today.day and birth_date.month == today.month:
+            users_info.append({
+                'id': user_id,
+                'name': name,
+                'birth_date': birth_date,
+                'fwd': fwd,
+                'users_for_mailing': users_for_mailing,
+                'birthday_group_name': birthday_group_name,
+                'channel_ttl': channel_ttl,
+                'days_in_advance': days_in_advance,
+            })
+
+        return users_info
+
+    async def create_birthday_group(self, user):
+        """Create birthday group. """
+
+        if settings.CREATE_BIRTHDAY_CHANNELS:
+            birthday_group_name = user['birthday_group_name']
+            users_for_mailing = user['users_for_mailing']
+
+            await self._restapi.create_group(birthday_group_name, list(users_for_mailing.values()))
+            await self._restapi.write_msg('@all, Let`s discuss a present', birthday_group_name)
+
+    async def check_dates(self):
+        """Check users birthdays, first working days. """
+
+        users = await User.query.gino.all()
+        users_info = await self.prepare_users_info(users)
+        today = date.today()
+        tomorrow = today + timedelta(days=1)
+        persons_without_birthday = ''
+        users_anniversary = ''
+
+        for user in users_info:
+            if user['birth_date'] is None:
+                await self._restapi.write_msg(settings.NOTIFY_SET_BIRTH_DATE, user['id'])
+                persons_without_birthday += f'\n@{user["name"]}'
+            elif user['birth_date'].day == today.day and user['birth_date'].month == today.month:
                 gif_url = await self.gif_receiver.get_random_gif_url()
                 phrase = random.choice(settings.CONGRATULATION_PHRASES)
-                response = f'{gif_url}\nToday is birthday of @{name}!\n{phrase}'
+                response = f'{gif_url}\nToday is birthday of @{user["name"]}!\n{phrase}'
                 await self._restapi.write_msg(response, 'GENERAL')
-            elif birth_date.day == tomorrow.day and birth_date.month == tomorrow.month:
-                for user_id_for_mailing in users_for_mailing.keys():
-                    await self._restapi.write_msg(f'@{name} is having a birthday tomorrow.',
+            elif (user['birth_date'].day == tomorrow.day and
+                  user['birth_date'].month == tomorrow.month):
+                for user_id_for_mailing in user['users_for_mailing'].keys():
+                    await self._restapi.write_msg(f'@{user["name"]} is having a birthday tomorrow.',
                                                   user_id_for_mailing)
-            elif (birth_date.day == days_in_advance.day and
-                    birth_date.month == days_in_advance.month):
-                if settings.CREATE_BIRTHDAY_CHANNELS:
-                    await self._restapi.create_private_room(f'birthday-of-{name}',
-                                                            list(users_for_mailing.values()))
-                    await self._restapi.write_msg('@all, Let`s discuss a present',
-                                                  f'birthday-of-{name}')
-                for user_id_for_mailing in users_for_mailing.keys():
+            elif (user['birth_date'].day == user['days_in_advance'].day and
+                    user['birth_date'].month == user['days_in_advance'].month):
+                await self.create_birthday_group(user)
+                for user_id_for_mailing in user['users_for_mailing'].keys():
                     await self._restapi.write_msg(
-                        f'@{name} is having a birthday on '
-                        f'{date.strftime(days_in_advance, "%d.%m.%Y")}', user_id_for_mailing)
-            elif (today.day == channel_ttl.day and today.month == channel_ttl.month and
-                  settings.CREATE_BIRTHDAY_CHANNELS):
-                await self._restapi.delete_private_room(f'birthday-of-{name}')
+                        f'@{user["name"]} is having a birthday on '
+                        f'{date.strftime(user["days_in_advance"], "%d.%m.%Y")}',
+                        user_id_for_mailing)
+            elif (today.day == user['channel_ttl'].day and
+                  today.month == user['channel_ttl'].month and settings.CREATE_BIRTHDAY_CHANNELS):
+                await self._restapi.delete_group(user['birthday_group_name'])
 
-            if (fwd is not None and fwd.day == today.day and fwd.month == today.month and
-                    (today.year - fwd.year) > 0):
-                response = ('I am glad to announce that today '
-                            'is the day of anniversary for some of us!')
-                response += (f'\n@{name} has been a part of our team for '
-                             f'{today.year - fwd.year} years!')
-                await self._restapi.write_msg(response, 'GENERAL')
+            if (user['fwd'] is not None and user['fwd'].day == today.day and
+                    user['fwd'].month == today.month and (today.year - user['fwd'].year) > 0):
+                anniversary = today.year - user['fwd'].year
+                year_str = 'year' if anniversary == 1 else 'years'
+                users_anniversary += (f'\n@{user["name"]} has been a part of our team for '
+                                      f'**{anniversary} {year_str}!**')
 
-        if persons_without_date != '' and settings.BIRTHDAY_LOGGING_CHANNEL:
+        if persons_without_birthday and settings.BIRTHDAY_LOGGING_CHANNEL:
             await self._restapi.write_msg(
-                settings.PERSONS_WITHOUT_BIRTHDAY_RESPONSE + persons_without_date,
+                settings.PERSONS_WITHOUT_BIRTHDAY_RESPONSE + persons_without_birthday,
                 settings.BIRTHDAY_LOGGING_CHANNEL)
+
+        if users_anniversary:
+            await self._restapi.write_msg(
+                'I am glad to announce that today is the day of anniversary for some of us!:tada:' +
+                users_anniversary, 'GENERAL')
 
     async def scheduler_jobs(self):
         """Wraps scheduler jobs. """
