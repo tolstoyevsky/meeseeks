@@ -13,7 +13,7 @@ class CommandsMixin(CommandsBase, ABC):
     async def cmd_rooms_info(self) -> None:
         """Sends information about rooms in Rocket.Chat. """
 
-        rooms: dict[str, str] | list[str] = await self._restapi.get_rooms(command=True)
+        rooms: dict[str, str] = await self._restapi.get_rooms()
         title: str = 'Hi, here is the information about the rooms :point_down:\n'
         response: str = ''
 
