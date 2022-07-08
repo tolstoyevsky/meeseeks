@@ -85,20 +85,20 @@ class HappyBirthder(CommandsMixin, DialogsMixin, MeeseeksCore):
 
         persons_without_avatar = ''
         server_users = await self._restapi.get_users()
-        for user in server_users.values():
-            if self.check_user_status(user):
-                url = urljoin(settings.HOST, f'/avatar/{user["username"]}')
-                async with ClientSession() as session:
-                    response_raw = await session.request('get', url=url)
-                if response_raw.content_type == 'image/svg+xml':
-                    persons_without_avatar += f'\n@{user["username"]}'
-                    await self._restapi.write_msg(settings.NOTIFY_SET_AVATAR, user['_id'])
+        async with ClientSession() as session:
+            for user in server_users.values():
+                if self.check_user_status(user):
+                    url = urljoin(settings.HOST, f'/avatar/{user["username"]}')
+                    response_raw = await session.get(url)
+                    if response_raw.content_type == 'image/svg+xml':
+                        persons_without_avatar += f'\n@{user["username"]}'
+                        await self._restapi.write_msg(settings.NOTIFY_SET_AVATAR, user['_id'])
 
-        if persons_without_avatar and settings.BIRTHDAY_LOGGING_CHANNEL:
-            await self._restapi.write_msg(
-                settings.PERSONS_WITHOUT_AVATAR_RESPONSE + persons_without_avatar,
-                settings.BIRTHDAY_LOGGING_CHANNEL,
-            )
+            if persons_without_avatar and settings.BIRTHDAY_LOGGING_CHANNEL:
+                await self._restapi.write_msg(
+                    settings.PERSONS_WITHOUT_AVATAR_RESPONSE + persons_without_avatar,
+                    settings.BIRTHDAY_LOGGING_CHANNEL,
+                )
 
     async def update_users(self):
         """Receive all user in chat and updates information in database. """
