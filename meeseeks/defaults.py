@@ -4,6 +4,7 @@
 INSTALLED_APPS = (
     'meeseeks.MeeseeksBaseApp',
     'apps.HappyBirthder',
+    'apps.Holidays',
     'apps.VoteOrDie',
 )
 
