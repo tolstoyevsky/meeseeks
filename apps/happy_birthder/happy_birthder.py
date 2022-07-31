@@ -5,7 +5,7 @@ import random
 from datetime import date, datetime, timedelta
 from urllib.parse import urljoin
 
-from aiohttp import ClientSession
+from aiohttp import ClientResponseError, ClientSession
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from apps.happy_birthder import settings
@@ -49,8 +49,11 @@ class GifReceiver:  # pylint: disable=too-few-public-methods
             f'&limit={settings.TENOR_IMAGE_LIMIT}&anon_id={anon_id}',
         )
         async with ClientSession(raise_for_status=True) as session:
-            response_raw = await session.get(url=url)
-            response = await response_raw.json()
+            try:
+                response_raw = await session.get(url)
+                response = await response_raw.json()
+            except ClientResponseError:
+                return []
 
         gifs: list = response['results']
         filtered_gifs = []
@@ -64,7 +67,8 @@ class GifReceiver:  # pylint: disable=too-few-public-methods
     async def get_random_gif_url(self):
         """Takes random gif from list of gifs. """
 
-        return random.choice(await self._get_gif_urls())
+        gif_urls = await self._get_gif_urls()
+        return random.choice(gif_urls) if gif_urls else ''
 
 
 class HappyBirthder(CommandsMixin, DialogsMixin, MeeseeksCore):
