@@ -19,6 +19,10 @@ CONGRATULATION_PHRASES = [
     'Birthdays are filled with yesterday’s memories, today’s joys, and tomorrow’s dreams.',
 ]
 
+SCHEDULER_SETTINGS = {
+    'apscheduler.timezone': TIME_ZONE,
+}
+
 TENOR_SEARCH_TERM = [
     'darthvaderbirthday',
     'gameofthronesbirthday',
