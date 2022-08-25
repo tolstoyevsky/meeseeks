@@ -79,7 +79,3 @@ TENOR_BLACKLISTED_GIF_IDS = (_TENOR_BLACKLISTED_GIF_IDS.split(',')
 
 # Scheduler
 HB_CRONTAB = os.getenv('HB_CRONTAB', '0 0 7 * * *')
-
-SCHEDULER_SETTINGS = {
-    'apscheduler.timezone': TIME_ZONE,
-}
