@@ -5,7 +5,7 @@ import random
 from datetime import date, datetime, timedelta
 from urllib.parse import urljoin
 
-from aiohttp import ClientResponseError, ClientSession
+from aiohttp import ClientError, ClientResponseError, ClientSession
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from apps.happy_birthder import settings
@@ -17,6 +17,8 @@ from meeseeks.logger import LOGGER
 
 class GifReceiver:  # pylint: disable=too-few-public-methods
     """Provide functionality for getting gifs from tenor.com. """
+
+    default_gif_url = 'https://media.tenor.com/images/70ee655d39086fdf380e343132ca9955/tenor.gif'
 
     def __init__(self, api_key):
         self._api_key = api_key
@@ -68,7 +70,7 @@ class GifReceiver:  # pylint: disable=too-few-public-methods
         """Takes random gif from list of gifs. """
 
         gif_urls = await self._get_gif_urls()
-        return random.choice(gif_urls) if gif_urls else ''
+        return random.choice(gif_urls) if gif_urls else self.default_gif_url
 
 
 class HappyBirthder(CommandsMixin, DialogsMixin, MeeseeksCore):
@@ -219,14 +221,25 @@ class HappyBirthder(CommandsMixin, DialogsMixin, MeeseeksCore):
                 'I am glad to announce that today is the day of anniversary for some of us!:tada:' +
                 users_anniversary, 'GENERAL')
 
+    @staticmethod
+    async def _job_exception_handler(job):
+        for _ in range(0, 5):
+            try:
+                await job()
+                break
+            except ClientError as exc:
+                LOGGER.error(exc)
+                LOGGER.info('Retrying...\n')
+                await asyncio.sleep(5)
+
     async def scheduler_jobs(self):
         """Wraps scheduler jobs. """
 
-        await self.update_users()
-        await self.check_dates()
+        await self._job_exception_handler(self.update_users)
+        await self._job_exception_handler(self.check_dates)
 
         if settings.CHECK_USERS_AVATARS:
-            await self.check_users_avatars()
+            await self._job_exception_handler(self.check_users_avatars)
 
     @staticmethod
     def parse_crontab(crontab: str) -> dict[str, str]:
