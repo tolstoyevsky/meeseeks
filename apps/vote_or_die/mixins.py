@@ -1,4 +1,4 @@
-"""Module containing VoteOrDie mixins. """
+"""Module contains VoteOrDie mixins. """
 
 from abc import ABC
 
@@ -15,7 +15,7 @@ class Communication(CommunicationBase, ABC):
     """Contains methods for processing incoming Rocket.Chat messages. """
 
     async def _write_command_attachment(self, title, msg):
-        """Sends a message to the channel from which the command was called. """
+        """Sends response to Rocket.Chat channel from which command was called. """
 
         return await self._restapi.write_attachments_msg(title, msg, self._ctx.room.id)
 
@@ -27,9 +27,15 @@ class CommandsBase(Communication, CommandsBaseCore, ABC):
 class CommandsMixin(CommandsBase, ABC):
     """Contains methods for running VoteOrDie commands on client Rocket.Chat. """
 
-    @cmd(name='vote', description='__doc__')
+    @cmd(
+        name='vote',
+        description=(
+            'Start vote with getting arguments. '
+            'Format args: _<name>_, _<answ1>_, _<answ2>_, ...'
+        ),
+    )
     async def cmd_vote(self):
-        """Start vote with getting arguments. """
+        """Sends message for vote to Rocket.Chat using args specified in message. """
 
         if (self._ctx.room.type == ContextRoom.DIALOG_ROOM_TYPE and settings.RESPOND_TO_DM or
                 self._ctx.room.type == ContextRoom.CHANNEL_ROOM_TYPE or

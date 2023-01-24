@@ -1,4 +1,4 @@
-"""Module containing VoteOrDie application classes. """
+"""Module contains VoteOrDie application classes. """
 
 from apps.vote_or_die.mixins import CommandsMixin
 from apps.vote_or_die.restapi import RestAPI

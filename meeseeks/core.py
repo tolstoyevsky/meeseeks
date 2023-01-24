@@ -1,4 +1,4 @@
-"""Module contains the basic functionality used by all applications. """
+"""Module contains basic functionality used by all applications. """
 
 import asyncio
 import json

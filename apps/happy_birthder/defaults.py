@@ -1,4 +1,4 @@
-"""Module containing default variables. """
+"""Module contains HappyBirthder application default variables. """
 
 from meeseeks.settings import *  # pylint: disable=wildcard-import, unused-wildcard-import
 

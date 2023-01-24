@@ -1,4 +1,5 @@
 """Module contains description of types for Meeseeks. """
+
 from abc import ABC
 from typing import Any, Awaitable, TypedDict
 

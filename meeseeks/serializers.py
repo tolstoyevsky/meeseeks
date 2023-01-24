@@ -1,4 +1,4 @@
-"""Contains base classes for serializing context classes. """
+"""Module contains base classes for serializing context classes. """
 
 from typing import Type, TYPE_CHECKING
 

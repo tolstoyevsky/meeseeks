@@ -1,4 +1,4 @@
-"""Module containing external applications. """
+"""Module contains exported applications. """
 
 from apps.happy_birthder.happy_birthder import HappyBirthder
 from apps.holidays.holidays import Holidays

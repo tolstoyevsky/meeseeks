@@ -1,4 +1,4 @@
-"""Module containing HappyBirthder application classes. """
+"""Module contains HappyBirthder application classes. """
 
 import asyncio
 import random
@@ -16,7 +16,7 @@ from meeseeks.logger import LOGGER
 
 
 class GifReceiver:  # pylint: disable=too-few-public-methods
-    """Provide functionality for getting gifs from tenor.com. """
+    """Provide functionality for getting gifs from TenorAPI. """
 
     def __init__(self, api_key):
         self._api_key = api_key

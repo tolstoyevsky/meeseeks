@@ -1,4 +1,4 @@
-"""Module containing functionality for interaction with Rocket.Chat REST API. """
+"""Module contains functionality for interaction with Rocket.Chat Realtime API. """
 
 import json
 from websockets import WebSocketClientProtocol  # pylint: disable=no-name-in-module
@@ -7,7 +7,7 @@ from meeseeks import settings
 
 
 class RealTimeAPI:
-    """Provide functionality for interaction with Rocket.Chat RealTime API. """
+    """Provide functionality for interaction with Rocket.Chat Realtime API. """
 
     def __init__(self, request: str, websocket: WebSocketClientProtocol):
         self._request: str = request

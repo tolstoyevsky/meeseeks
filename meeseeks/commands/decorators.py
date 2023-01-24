@@ -1,4 +1,4 @@
-"""Module containing Meeseeks commands decorators. """
+"""Module contains Meeseeks commands decorators. """
 
 import asyncio
 from functools import wraps

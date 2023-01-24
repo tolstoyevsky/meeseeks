@@ -1,4 +1,4 @@
-"""Settings for Holidays application. """
+"""Module contains Holidays application settings. """
 
 import os
 

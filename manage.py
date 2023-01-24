@@ -1,4 +1,4 @@
-"""Module collect installed apps and run. """
+"""Module contains methods for running Meeseeks apps. """
 
 import asyncio
 

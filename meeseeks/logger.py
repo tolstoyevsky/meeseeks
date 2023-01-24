@@ -1,4 +1,4 @@
-"""Module containing logging configuration. """
+"""Module contains logging configuration. """
 
 import logging
 

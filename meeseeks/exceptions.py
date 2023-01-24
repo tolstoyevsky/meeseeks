@@ -1,4 +1,4 @@
-"""Module containing Meeseeks exceptions. """
+"""Module contains Meeseeks exceptions. """
 
 
 class LogInFailed(Exception):
