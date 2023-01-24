@@ -1,4 +1,4 @@
-"""Module containing models definition. """
+"""Module contains models definition. """
 
 from gino import Gino
 

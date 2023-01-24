@@ -1,4 +1,4 @@
-"""Module containing Holidays application classes. """
+"""Module contains Holidays application classes. """
 
 import io
 import json

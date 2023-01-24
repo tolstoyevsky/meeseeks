@@ -101,9 +101,9 @@ class CommandsBase(Communication, ABC):
         self._ctx = ctx
         await self._process_command()
 
-    @cmd(name='help', description='__doc__')
+    @cmd(name='help', description='Get commands list for this application',)
     async def cmd_help(self) -> None:
-        """Return list of commands for this application. """
+        """Receives apps commands and sends response to Rocket.Chat. """
 
         if not self._command_method or not self._command_method.command_name:
             return None

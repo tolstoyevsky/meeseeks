@@ -1,4 +1,4 @@
-"""Module containing HappyBirthder mixins. """
+"""Module contains HappyBirthder mixins. """
 
 import re
 from abc import ABC
@@ -17,7 +17,7 @@ class CommandsMixin(CommandsBase, ABC):
 
     @staticmethod
     def check_user_status(user):
-        """Check user status for processing data. """
+        """Checks user status by his role in Rocket.Chat. """
 
         return (user['active'] and
                 'guest' not in user['roles'] and
@@ -25,9 +25,15 @@ class CommandsMixin(CommandsBase, ABC):
                 'app' not in user['roles'] or
                 'admin' in user['roles'])
 
-    @cmd(name='set users birthday', permissions=['admin'], description='__doc__')
+    @cmd(
+        name='set users birthday',
+        permissions=['admin', ],
+        description='Set birth date to given users. Format args: @<_username_> _<dd.mm.yyyy>_, ...',
+    )
     async def cmd_set_users_birthday(self):
-        """Sets birth date to given users. """
+        """Sets birth date in app database for specified users in message args
+        and sends response to Rocket.Chat.
+        """
 
         arguments = self._get_arguments(self._command_method.command_name)
         users_info = [user_info_raw.split() for user_info_raw in arguments]
@@ -54,9 +60,13 @@ class CommandsMixin(CommandsBase, ABC):
 
         await self._write_command_msg(response)
 
-    @cmd(name='delete all users', permissions=['admin'], description='__doc__')
+    @cmd(
+        name='delete all users',
+        permissions=['admin', ],
+        description='Delete all users from database',
+    )
     async def cmd_del_all_users(self):
-        """Delete all users from database. """
+        """Deletes all users from app database and sends response to Rocket.Chat. """
 
         users = await User.query.gino.all()
         for user in users:
@@ -64,9 +74,13 @@ class CommandsMixin(CommandsBase, ABC):
 
         await self._write_command_msg('Success')
 
-    @cmd(name='get users base', permissions=['admin'], description='__doc__')
+    @cmd(
+        name='get users base',
+        permissions=['admin', ],
+        description='Get all users from database',
+    )
     async def cmd_get_users_base(self):
-        """Receive all users from database. """
+        """Gets all info about users from app database and sends response to Rocket.Chat. """
 
         users = await User.query.gino.all()
         headers = ['user_id', 'name', 'is_active', 'birth_date', 'fwd']
@@ -83,9 +97,14 @@ class CommandsMixin(CommandsBase, ABC):
         await self._write_command_msg(
             f'```\n{tabulate(table, headers, tablefmt="fancy_grid")}\n```')
 
-    @cmd(name='create users', permissions=['admin'], description='__doc__')
+    @cmd(name='create users',
+         permissions=['admin', ],
+         description='Create given users. Format args: @<_username_>, ...',
+         )
     async def cmd_create_users(self):
-        """Create given users. """
+        """Creates users specified in message args in app database
+        and sends response to Rocket.Chat.
+        """
 
         server_users = await self._restapi.get_users()
         arguments = self._get_arguments(self._command_method.command_name)
@@ -118,9 +137,15 @@ class CommandsMixin(CommandsBase, ABC):
 
         await self._write_command_msg(response)
 
-    @cmd(name='delete users', permissions=['admin'], description='__doc__')
+    @cmd(
+        name='delete users',
+        permissions=['admin', ],
+        description='Delete given users. Format args: @<_username_>, ...',
+    )
     async def cmd_delete_users(self):
-        """Delete given users. """
+        """Deletes users specified in message args from app database
+        and sends response to Rocket.Chat.
+        """
 
         arguments = self._get_arguments(self._command_method.command_name)
         users_info = [user_info_raw.split() for user_info_raw in arguments]
@@ -138,9 +163,15 @@ class CommandsMixin(CommandsBase, ABC):
 
         await self._write_command_msg(response)
 
-    @cmd(name='update users', permissions=['admin'], description='__doc__')
+    @cmd(
+        name='update users',
+        permissions=['admin', ],
+        description='Update users information in database',
+    )
     async def cmd_update_users(self):
-        """Receive all user in chat and updates information in database. """
+        """Receives all users from Rocket.Chat and creates missing ones in app database,
+        then sends response to Rocket.Chat.
+        """
 
         server_users = await self._restapi.get_users()
         for user in server_users.values():
@@ -150,9 +181,15 @@ class CommandsMixin(CommandsBase, ABC):
 
         await self._write_command_msg('Success')
 
-    @cmd(name='get fwd list', permissions=['admin'], description='__doc__')
+    @cmd(
+        name='get fwd list',
+        permissions=['admin', ],
+        description='Get first working day of all users',
+    )
     async def cmd_get_fwd_list(self):
-        """Receive first working day of all users. """
+        """Gets first working day of each user from app database
+        and sends response to Rocket.Chat.
+        """
 
         users_in_base = await User.query.gino.all()
         response = '_First working days list_'
@@ -165,9 +202,16 @@ class CommandsMixin(CommandsBase, ABC):
 
         await self._write_command_msg(response)
 
-    @cmd(name='set users fwd', permissions=['admin'], description='__doc__')
+    @cmd(
+        name='set users fwd',
+        permissions=['admin', ],
+        description='Set first working day to given users. '
+                    'Format args: @<_username_> _<dd.mm.yyyy>_, ...',
+    )
     async def cmd_set_users_fwd(self):
-        """Set first working day to given users. """
+        """Sets first working day in app database for specified users in message args
+        and sends response to Rocket.Chat.
+        """
 
         arguments = self._get_arguments(self._command_method.command_name)
         users_info = [user_info_raw.split() for user_info_raw in arguments]

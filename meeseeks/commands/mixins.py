@@ -1,4 +1,4 @@
-"""Module containing Meeseeks commands mixins. """
+"""Module contains Meeseeks commands mixins. """
 from abc import ABC
 
 from meeseeks import settings
@@ -9,9 +9,13 @@ from meeseeks.commands.decorators import cmd
 class CommandsMixin(CommandsBase, ABC):
     """Contains methods for running Meeseeks commands on client Rocket.Chat. """
 
-    @cmd(name='get rooms info', permissions=['admin'], description='__doc__')
+    @cmd(
+        name='get rooms info',
+        permissions=['admin', ],
+        description='Get information about available rooms',
+    )
     async def cmd_rooms_info(self) -> None:
-        """Sends information about rooms in Rocket.Chat. """
+        """Receives available rooms from Rocket.Chat and sends response to Rocket.Chat. """
 
         rooms: dict[str, str] = await self._restapi.get_rooms()
         title: str = 'Hi, here is the information about the rooms :point_down:\n'
@@ -23,9 +27,13 @@ class CommandsMixin(CommandsBase, ABC):
 
             await self._write_command_msg(title + response)
 
-    @cmd(name='get users info', permissions=['admin'], description='__doc__')
+    @cmd(
+        name='get users info',
+        permissions=['admin', ],
+        description='Get information about users',
+    )
     async def cmd_users_info(self) -> None:
-        """Sends information about users. """
+        """Receives users from Rocket.Chat and sends response to Rocket.Chat. """
 
         users: dict[str, dict] = await self._restapi.get_users()
         title: str = 'Hi, here is the information about the users :point_down:\n'

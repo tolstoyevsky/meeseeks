@@ -1,4 +1,4 @@
-"""Module containing default variables. """
+"""Module contains default variables. """
 
 # Installed apps are launched by Meeseeks
 INSTALLED_APPS = (

@@ -1,4 +1,4 @@
-"""Module containing MeeseeksBaseApp application classes. """
+"""Module contains MeeseeksBaseApp application classes. """
 
 from meeseeks.commands import CommandsMixin, DialogsMixin
 from meeseeks.logger import LOGGER

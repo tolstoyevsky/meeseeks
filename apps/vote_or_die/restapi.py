@@ -1,4 +1,4 @@
-"""Module containing functionality for interaction with Rocket.Chat REST API. """
+"""Module contains functionality for interaction with Rocket.Chat RestAPI. """
 
 import json
 
@@ -7,10 +7,10 @@ from meeseeks.restapi import RestAPI as RestAPIBase
 
 
 class RestAPI(RestAPIBase):
-    """Provide functionality for interaction with Rocket.Chat REST API. """
+    """Provide functionality for interaction with Rocket.Chat RestAPI. """
 
     async def write_attachments_msg(self, title, text, room_id):
-        """Sends message to chat with attachments. """
+        """Sends message to Rocket.Chat with attachments. """
 
         msg = json.dumps({
             'channel': room_id,

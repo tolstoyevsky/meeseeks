@@ -1,4 +1,4 @@
-"""Settings for HappyBirthder application. """
+"""Module contains VoteOrDie application settings. """
 
 from apps.vote_or_die.defaults import *  # pylint: disable=wildcard-import,unused-wildcard-import
 

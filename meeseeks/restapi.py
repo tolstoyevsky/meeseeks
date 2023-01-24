@@ -1,4 +1,4 @@
-"""Module containing functionality for interaction with Rocket.Chat REST API. """
+"""Module contains functionality for interaction with Rocket.Chat RestAPI. """
 
 import json
 from typing import Any
@@ -10,7 +10,7 @@ from meeseeks.type import UserInfo
 
 
 class RestAPI:
-    """Provide functionality for interaction with Rocket.Chat REST API. """
+    """Contains method for interaction with Rocket.Chat RestAPI. """
 
     def __init__(self, headers: dict[str, str]):
         self._headers: dict[str, str] = headers

@@ -1,4 +1,4 @@
-"""Settings for meeseeks project. """
+"""Module contains Meeseeks core settings. """
 
 import os
 
