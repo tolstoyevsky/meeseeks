@@ -26,6 +26,6 @@ GROUP_INFO_GET_REQUEST = '/groups.info/'
 
 ROOMS_GET_REQUEST = '/rooms.get/'
 
-USERS_LIST_REQUEST = '/users.list/'
+USERS_LIST_REQUEST = '/users.list/?count=0'
 
 USERS_INFO_REQUEST = '/users.info/'
