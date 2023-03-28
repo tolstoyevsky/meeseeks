@@ -183,9 +183,6 @@ class MeeseeksCore(Generic[_T]):
                                      'websocket')
         async with websockets.connect(websocket_url) as websocket:
             self._websocket = websocket
-            if not self._websocket:
-                raise Exception
-
             self._rtapi = RealTimeAPI(self._request, self._websocket)
             self._restapi = RestAPI(self._headers)
 
