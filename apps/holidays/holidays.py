@@ -72,7 +72,7 @@ class Holidays(MeeseeksCore):
         response = {}
         if settings.CUSTOM_HOLIDAYS:
             self._custom_holidays = json.loads(settings.CUSTOM_HOLIDAYS)
-            advance_date = (self._now + timedelta(days=self._number_of_days_in_advance))
+            advance_date = self._now + timedelta(days=self._number_of_days_in_advance)
 
             for title, custom_days in self._custom_holidays.items():
                 start_date = datetime.strptime(
