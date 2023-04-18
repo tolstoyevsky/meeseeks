@@ -69,13 +69,16 @@ class CommandsMixin(CommandsBase, ABC):
         """Receive all users from database. """
 
         users = await User.query.gino.all()
-        headers = ['user_id', 'name', 'birth_date', 'fwd']
+        headers = ['user_id', 'name', 'is_active', 'birth_date', 'fwd']
         table = []
 
         for user in users:
             birth_date = user.birth_date.strftime('%d.%m.%Y') if user.birth_date else None
             fwd = user.fwd.strftime('%d.%m.%Y') if user.fwd else None
-            table.append([user.user_id, user.name, birth_date, fwd])
+            server_user_info = await self._restapi.get_user_info(user.user_id)
+            is_active = server_user_info['active']
+
+            table.append([user.user_id, user.name, is_active, birth_date, fwd])
 
         await self._write_command_msg(
             f'```\n{tabulate(table, headers, tablefmt="fancy_grid")}\n```')
