@@ -57,7 +57,8 @@ class Holidays(MeeseeksCore):
                     response_msg += f'не работаем **{response["start"]}**'
                 else:
                     response_msg += (
-                        f'не работаем с **{response["start"]}** по **{response["end"]}**'
+                        f'не работаем с **{response["start"]}** '
+                        f'по **{response["end"]}** (включительно)'
                     )
 
                 return await self._restapi.write_msg(response_msg, 'GENERAL')
