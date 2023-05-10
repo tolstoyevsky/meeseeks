@@ -138,9 +138,6 @@ class HappyBirthder(CommandsMixin, DialogsMixin, MeeseeksCore):
                 user.user_id: user.name for user in users if user.user_id != user_id and
                 self.check_user_status(await self._restapi.get_user_info(user.user_id))
             }
-            channel_ttl = (
-                birth_date + timedelta(days=settings.BIRTHDAY_CHANNEL_TTL) if birth_date else None
-            )
             days_in_advance = today + timedelta(days=settings.NUMBER_OF_DAYS_IN_ADVANCE)
 
             users_info.append({
@@ -150,7 +147,6 @@ class HappyBirthder(CommandsMixin, DialogsMixin, MeeseeksCore):
                 'fwd': fwd,
                 'users_for_mailing': users_for_mailing,
                 'birthday_group_name': birthday_group_name,
-                'channel_ttl': channel_ttl,
                 'days_in_advance': days_in_advance,
             })
 
@@ -166,6 +162,28 @@ class HappyBirthder(CommandsMixin, DialogsMixin, MeeseeksCore):
             await self._restapi.create_group(birthday_group_name, list(users_for_mailing.values()))
             await self._restapi.write_msg('@all, Let`s discuss a present', birthday_group_name)
 
+    async def _check_birthday_group_ttl_expired(self, birth_date, birthday_group_name):
+        """Checks if expired birthday group time to live. """
+
+        try:
+            group_info = await self._restapi.get_group_info(birthday_group_name)
+        except ClientResponseError:
+            return False
+
+        utcnow = datetime.utcnow().date()
+        group_ttl = timedelta(days=settings.BIRTHDAY_CHANNEL_TTL)
+        group_last_message_date = datetime.fromisoformat(
+            group_info['lastMessage']['ts'].replace('Z', '')
+        ).date()
+
+        return (
+            utcnow.month >= (birth_date + group_ttl).month and
+            utcnow.day >= (birth_date + group_ttl).day and
+
+            (utcnow - group_ttl).month >= group_last_message_date.month and
+            (utcnow - group_ttl).day >= group_last_message_date.day
+        )
+
     async def check_dates(self):
         """Check users birthdays, first working days. """
 
@@ -177,6 +195,11 @@ class HappyBirthder(CommandsMixin, DialogsMixin, MeeseeksCore):
         users_anniversary = ''
 
         for user in users_info:
+            is_birthday_group_ttl_expired = await self._check_birthday_group_ttl_expired(
+                user['birth_date'],
+                user['birthday_group_name'],
+            )
+
             if user['birth_date'] is None:
                 await self._restapi.write_msg(settings.NOTIFY_SET_BIRTH_DATE, user['id'])
                 persons_without_birthday += f'\n@{user["name"]}'
@@ -198,8 +221,7 @@ class HappyBirthder(CommandsMixin, DialogsMixin, MeeseeksCore):
                         f'@{user["name"]} is having a birthday on '
                         f'{date.strftime(user["days_in_advance"], "%d.%m.%Y")}',
                         user_id_for_mailing)
-            elif (today.day == user['channel_ttl'].day and
-                  today.month == user['channel_ttl'].month and settings.CREATE_BIRTHDAY_CHANNELS):
+            elif is_birthday_group_ttl_expired and settings.CREATE_BIRTHDAY_CHANNELS:
                 await self._restapi.delete_group(user['birthday_group_name'])
 
             if (user['fwd'] is not None and user['fwd'].day == today.day and
