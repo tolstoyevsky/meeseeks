@@ -17,7 +17,7 @@ PG_HOST = os.environ['PG_HOST']
 PG_USER = os.environ['PG_USER']
 
 # HappyBirthder
-BIRTHDAY_CHANNEL_TTL = int(os.getenv('BIRTHDAY_CHANNEL_TTL', '3'))
+BIRTHDAY_CHANNEL_TTL = int(os.getenv('BIRTHDAY_CHANNEL_TTL', '7'))
 
 BIRTHDAY_LOGGING_CHANNEL = os.getenv('BIRTHDAY_LOGGING_CHANNEL')
 
