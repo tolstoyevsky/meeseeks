@@ -215,9 +215,7 @@ class HappyBirthder(CommandsMixin, DialogsMixin, MeeseeksCore):
                 settings.BIRTHDAY_LOGGING_CHANNEL)
 
         if users_anniversary:
-            await self._restapi.write_msg(
-                'I am glad to announce that today is the day of anniversary for some of us!:tada:' +
-                users_anniversary, 'GENERAL')
+            await self._restapi.write_msg(settings.ANNIVERSARY + users_anniversary, 'GENERAL')
 
     async def scheduler_jobs(self):
         """Wraps scheduler jobs. """
