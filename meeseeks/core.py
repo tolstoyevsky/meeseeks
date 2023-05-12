@@ -137,10 +137,10 @@ class MeeseeksCore(Generic[_T]):
 
         return app_instances
 
-    async def loop(self) -> None:
-        """Method is intended for calling in endless loop to process Rocket.Chat callbacks. """
+    async def message_handler(self, message: str) -> None:
+        """Serializes message context and run processing for each app. """
 
-        raw_context: WebSocketClientProtocol = json.loads(await self._websocket.recv())
+        raw_context: WebSocketClientProtocol = json.loads(message)
         if raw_context.get('msg') == 'ping':
             await self._rtapi.pong()
             return None
@@ -193,9 +193,9 @@ class MeeseeksCore(Generic[_T]):
                 self.check_app_name(app)
                 await app.setup()
 
-            while True:
+            async for message in websocket:
                 try:
-                    await self.loop()
+                    asyncio.create_task(self.message_handler(message))
                 except ClientResponseError as exc:
                     LOGGER.error(exc)
                 except ConnectionClosedOK:
