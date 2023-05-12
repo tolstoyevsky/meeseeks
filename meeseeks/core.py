@@ -45,7 +45,6 @@ class MeeseeksCore(Generic[_T]):
     _apps: list = []
 
     def __init__(self) -> None:
-        self._ctx: Context | None = None
         self._request: str = ''
         self._websocket: WebSocketClientProtocol = WebSocketClientProtocol
         self._websocket_protocol: str = 'wss' if self._url.scheme == 'https' else 'ws'
@@ -86,13 +85,13 @@ class MeeseeksCore(Generic[_T]):
                         serializer: ContextSerializer = ContextSerializer(
                             raw_context, raw_context['msg'], raw_context['id'],
                         )
-                        self._ctx = serializer.serialize()
+                        ctx: Context = serializer.serialize()
                     except (KeyError, ValueError, ):
                         continue
 
-                    if isinstance(self._ctx, LoginCtx):
-                        self._user_id = self._ctx.user_id
-                        self._token = self._ctx.token
+                    if isinstance(ctx, LoginCtx):
+                        self._user_id = ctx.user_id
+                        self._token = ctx.token
                         self._headers.update({
                             'X-Auth-Token': self._token,
                             'X-User-Id': self._user_id,
@@ -153,23 +152,23 @@ class MeeseeksCore(Generic[_T]):
             return None
 
         try:
-            self._ctx = serializer.serialize()
+            ctx: Context = serializer.serialize()
         except SerializerError:
             return None
 
-        if isinstance(self._ctx, ChangedRoomMessageCtx):
+        if isinstance(ctx, ChangedRoomMessageCtx):
             exc_counter = 0
             for app in self._apps:
                 try:
-                    await app.process(self._ctx)
+                    await app.process(ctx)
                 except AbortCommandExecution:
-                    await self._restapi.write_msg(_ACCESS_DENIED_MSG, self._ctx.room.id)
+                    await self._restapi.write_msg(_ACCESS_DENIED_MSG, ctx.room.id)
                     break
                 except CommandDoesNotExist:
                     exc_counter += 1
 
             if exc_counter == len(self._apps):
-                await self._restapi.write_msg(_COMMAND_DOES_NOT_EXIST, self._ctx.room.id)
+                await self._restapi.write_msg(_COMMAND_DOES_NOT_EXIST, ctx.room.id)
 
     async def setup(self) -> None:
         """Add functional in app after login. """
