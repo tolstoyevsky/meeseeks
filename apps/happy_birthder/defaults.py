@@ -2,6 +2,8 @@
 
 from meeseeks.settings import *  # pylint: disable=wildcard-import, unused-wildcard-import
 
+ANNIVERSARY = 'I’m glad to announce that today is an anniversary for some of us! :tada:'
+
 CONGRATULATION_PHRASES = [
     'May this year bring with it all the success and fulfillment your heart desires.',
 
