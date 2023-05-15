@@ -11,6 +11,7 @@ XML_CALENDAR_HOST = os.getenv('XML_CALENDAR_HOST', 'http://xmlcalendar.ru')
 
 CUSTOM_HOLIDAYS = os.getenv('CUSTOM_HOLIDAYS', '')
 
+
 # Scheduler
 HOLIDAYS_CRONTAB_WEEK_BEFORE = os.getenv('HOLIDAYS_CRONTAB_WEEK_BEFORE', '0 0 7 * * *')
 
