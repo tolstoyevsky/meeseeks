@@ -177,11 +177,8 @@ class HappyBirthder(CommandsMixin, DialogsMixin, MeeseeksCore):
         ).date()
 
         return (
-            utcnow.month >= (birth_date + group_ttl).month and
-            utcnow.day >= (birth_date + group_ttl).day and
-
-            (utcnow - group_ttl).month >= group_last_message_date.month and
-            (utcnow - group_ttl).day >= group_last_message_date.day
+            utcnow >= birth_date + group_ttl and
+            utcnow >= group_last_message_date + group_ttl
         )
 
     async def check_dates(self):
