@@ -127,3 +127,13 @@ class RestAPI:
         group_info: dict[str, Any] = response['group']
 
         return group_info
+
+    async def set_online_status(self) -> dict[str, Any]:
+        """Set online status for bot. When bot will turn off, status will change to offline. """
+
+        msg: str = json.dumps({
+            'username': settings.USER_NAME,
+            'status': 'online',
+        })
+
+        return await self.make_request(settings.USERS_SET_STATUS_REQUEST, 'post', msg)

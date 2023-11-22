@@ -29,3 +29,5 @@ ROOMS_GET_REQUEST = '/rooms.get/'
 USERS_LIST_REQUEST = '/users.list/?count=0'
 
 USERS_INFO_REQUEST = '/users.info/'
+
+USERS_SET_STATUS_REQUEST = '/users.setStatus/'
