@@ -5,5 +5,3 @@ from meeseeks.settings import *  # pylint: disable=wildcard-import, unused-wildc
 SCHEDULER_SETTINGS = {
     'apscheduler.timezone': TIME_ZONE,
 }
-
-XML_CALENDAR_HOST = 'http://xmlcalendar.ru'
