@@ -98,6 +98,9 @@ class MeeseeksCore(Generic[_T]):
                             'X-User-Id': self._user_id,
                             'Content-type': 'application/json'
                         })
+
+                        await self._restapi.set_online_status()
+
                         LOGGER.info('%s: Login complete', self.__class__.__name__)
                         await self.bot_configure()
                         await self._rtapi.stream_all_messages()
