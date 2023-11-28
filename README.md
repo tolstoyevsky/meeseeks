@@ -53,7 +53,18 @@ The functionality of the script is divided into two parts: handling birthdays an
   * Memorizing the date when a new employee logs in to Rocket.Chat for the first time (the date is equal to the first working day in the company).
   * Congratulating employees on anniversary of working in the company (congratulations are written to `#general`).
 
-## Конфигурирование проекта
+## How to use crontab expression
+
+**Parameters:**
+
+- second – (0-59)
+- minute - (0-59)
+- hour – (0-23)
+- day of month - (1-31)
+- month – (1-12)
+- day of week – number or name of weekday (0-6 or MON,TUE,WED,THU,FRI,SAT,SUN)
+
+## Project configuration
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
@@ -74,3 +85,4 @@ The functionality of the script is divided into two parts: handling birthdays an
 | `HB_CRONTAB` | Allows specifying the frequency with which the script checks for nearest birthdays and writes birthday messages to users. The value of this parameter must follow the Cron Format. | 0 0 7 * * * |
 | `NUMBER_OF_DAYS_IN_ADVANCE` | Sets (in days) how long before the event occurs the reminder will be triggered. | 7 |
 | `RESPOND_TO_DM` | Allows you to create polls using command | False |
+| `REMINDERS_LIST` | JSON string that specifies all reminders that will be sent to specfy channel according to schedule. Format of string: `[{"crontab": "0 30 8 * * MON,FRI", "text": "Today is a good day", "channel": "general"}]` | [] |
