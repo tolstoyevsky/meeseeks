@@ -6,6 +6,7 @@ INSTALLED_APPS = (
     'apps.HappyBirthder',
     'apps.Holidays',
     'apps.VoteOrDie',
+    'apps.Reminder'
 )
 
 RC_REALTIME_LOGIN = 'login'
