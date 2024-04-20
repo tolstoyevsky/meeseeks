@@ -176,8 +176,15 @@ class HappyBirthder(CommandsMixin, DialogsMixin, MeeseeksCore):
             group_info['lastMessage']['ts'].replace('Z', '')
         ).date()
 
+        # Use current year for valid comparison of day and month of birthday date
+        birth_date_with_current_year = date(
+            year=utcnow.year,
+            month=birth_date.month,
+            day=birth_date.day,
+        )
+
         return (
-            utcnow >= birth_date + group_ttl and
+            utcnow >= birth_date_with_current_year + group_ttl and
             utcnow >= group_last_message_date + group_ttl
         )
 
