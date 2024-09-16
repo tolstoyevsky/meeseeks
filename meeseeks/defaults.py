@@ -9,8 +9,14 @@ INSTALLED_APPS = (
     'apps.Reminder'
 )
 
+HELLO_RESPONSE = 'Hello world!'
+
 RC_REALTIME_LOGIN = 'login'
 
+TIME_ZONE = 'Europe/Moscow'
+
+
+# Rocket.Chat API endpoints
 CHAT_MESSAGE_POST_REQUEST = '/chat.postMessage/'
 
 CHAT_REACT_POST_REQUEST = '/chat.react/'
