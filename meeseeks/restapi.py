@@ -21,11 +21,15 @@ class RestAPI:
         """Sends async http request. """
 
         url: str = settings.ROCKET_CHAT_API + restapi_method
+        headers = self._headers.copy()
+        if data is not None:
+            headers['Content-Type'] = 'application/json'
+
         async with ClientSession(raise_for_status=True) as session:
             response_raw: ClientResponse = await session.request(
                 method,
                 url=url,
-                headers=self._headers,
+                headers=headers,
                 data=data,
             )
             response: dict[str, Any] = await response_raw.json()
