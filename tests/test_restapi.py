@@ -16,7 +16,7 @@ from tests.server_responses import (
 class TestRestAPI(BaseTestClass):
     """Tests of RestAPI class. """
 
-    @mock.patch('meeseeks.settings.USERS_LIST_REQUEST', '/users.list_500/')
+    @mock.patch('meeseeks.settings.USERS_LIST_REQUEST', '/users.list_500')
     def test_fail_make_request(self):
         """Test of failure make_request method. """
 

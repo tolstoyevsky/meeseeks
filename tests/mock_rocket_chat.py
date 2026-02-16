@@ -45,18 +45,18 @@ class MockRocketChat(BaseHTTPRequestHandler):
         """Handles GET requests to mock web server. """
 
         endpoints = {
-            '/groups.members/': lambda: self._send_response(GROUPS_MEMBERS_GET_SUCCESS_RESPONSE),
-            '/hello/': lambda: self._send_response({'Hello': 'World!'}),
-            '/rooms.get/': lambda: self._send_response(ROOMS_GET_SUCCESS_RESPONSE),
-            '/users.info/': lambda: self._send_response(USER_INFO_GET_SUCCESS_RESPONSE),
-            '/users.list/': lambda: self._send_response(USERS_LIST_GET_SUCCESS_RESPONSE),
-            '/users.list_without_permissons/': lambda: self._send_response(
-                USERS_LIST_GET_SUCCESS_RESPONSE_WITHOUT_BOT_PERMISSIONS,
-            ),
-            '/users.list_500/': lambda: self._send_response(
+            '/users.list_500': lambda: self._send_response(
                 INTERNAL_SERVER_ERROR_RESPONSE,
                 status_code=500,
             ),
+            '/users.list_without_permissons': lambda: self._send_response(
+                USERS_LIST_GET_SUCCESS_RESPONSE_WITHOUT_BOT_PERMISSIONS,
+            ),
+            '/groups.members': lambda: self._send_response(GROUPS_MEMBERS_GET_SUCCESS_RESPONSE),
+            '/hello': lambda: self._send_response({'Hello': 'World!'}),
+            '/rooms.get': lambda: self._send_response(ROOMS_GET_SUCCESS_RESPONSE),
+            '/users.info': lambda: self._send_response(USER_INFO_GET_SUCCESS_RESPONSE),
+            '/users.list': lambda: self._send_response(USERS_LIST_GET_SUCCESS_RESPONSE),
         }
 
         for endpoint, process_request in endpoints.items():
@@ -71,11 +71,11 @@ class MockRocketChat(BaseHTTPRequestHandler):
         """Handles POST requests to mock web server. """
 
         endpoints = {
-            '/chat.postMessage/': lambda: self._send_response(CHAT_POST_MESSAGE_SUCCESS_RESPONSE),
-            '/chat.react/': lambda: self._send_response(CHAT_REACT_POST_SUCCESS_RESPONSE),
-            '/groups.create/': lambda: self._send_response(GROUPS_CREATE_POST_SUCCESS_RESPONSE),
-            '/groups.delete/': lambda: self._send_response(GROUPS_DELETE_POST_SUCCESS_RESPONSE),
-            '/groups.invite/': lambda: self._send_response(GROUPS_INVITE_POST_SUCCESS_RESPONSE),
+            '/chat.postMessage': lambda: self._send_response(CHAT_POST_MESSAGE_SUCCESS_RESPONSE),
+            '/chat.react': lambda: self._send_response(CHAT_REACT_POST_SUCCESS_RESPONSE),
+            '/groups.create': lambda: self._send_response(GROUPS_CREATE_POST_SUCCESS_RESPONSE),
+            '/groups.delete': lambda: self._send_response(GROUPS_DELETE_POST_SUCCESS_RESPONSE),
+            '/groups.invite': lambda: self._send_response(GROUPS_INVITE_POST_SUCCESS_RESPONSE),
         }
 
         for endpoint, process_request in endpoints.items():
