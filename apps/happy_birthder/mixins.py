@@ -85,12 +85,16 @@ class CommandsMixin(CommandsBase, ABC):
         users = await User.query.gino.all()
         headers = ['user_id', 'name', 'is_active', 'birth_date', 'fwd']
         table = []
+        server_users = await self._restapi.get_users()
 
         for user in users:
             birth_date = user.birth_date.strftime('%d.%m.%Y') if user.birth_date else None
             fwd = user.fwd.strftime('%d.%m.%Y') if user.fwd else None
-            server_user_info = await self._restapi.get_user_info(user.user_id)
-            is_active = server_user_info['active']
+
+            is_active = None
+            if user.user_id in server_users:
+                server_user_info = await self._restapi.get_user_info(user.user_id)
+                is_active = server_user_info['active']
 
             table.append([user.user_id, user.name, is_active, birth_date, fwd])
 
