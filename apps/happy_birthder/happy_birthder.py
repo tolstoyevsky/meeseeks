@@ -2,6 +2,7 @@
 
 import asyncio
 import random
+import traceback
 from datetime import date, datetime, timedelta
 from urllib.parse import urljoin
 
@@ -84,7 +85,22 @@ class HappyBirthder(CommandsMixin, DialogsMixin, MeeseeksCore):
         self.gif_receiver = GifReceiver(settings.TENOR_API_KEY)
         self.scheduler = AsyncIOScheduler(settings.SCHEDULER_SETTINGS)
 
-    async def check_users_avatars(self):
+    @staticmethod
+    def send_traceback(func):
+        """Decorator handles unexpected exceptions and sends traceback to Rocket.Chat. """
+
+        async def wrapper(self, *args, **kwargs):
+            try:
+                await func(self, *args, **kwargs)
+            except Exception:  # pylint: disable=broad-exception-caught
+                alert_msg = settings.TRACEBACK_ALERT_MSG.format(traceback.format_exc())
+                await self._restapi.write_msg(alert_msg, settings.TRACEBACK_ALERT_GROUP)  # pylint: disable=protected-access
+                raise
+
+        return wrapper
+
+    @send_traceback
+    async def check_users_avatars_job(self):
         """Checks if the users set their avatars. """
 
         persons_without_avatar = ''
@@ -104,7 +120,8 @@ class HappyBirthder(CommandsMixin, DialogsMixin, MeeseeksCore):
                     settings.BIRTHDAY_LOGGING_CHANNEL,
                 )
 
-    async def update_users(self):
+    @send_traceback
+    async def update_users_job(self):
         """Receive all user in chat and updates information in database. """
 
         server_users = await self._restapi.get_users()
@@ -188,7 +205,8 @@ class HappyBirthder(CommandsMixin, DialogsMixin, MeeseeksCore):
             utcnow >= group_last_message_date + group_ttl
         )
 
-    async def check_dates(self):
+    @send_traceback
+    async def check_dates_job(self):
         """Check users birthdays, first working days. """
 
         users = await User.query.gino.all()
@@ -248,11 +266,11 @@ class HappyBirthder(CommandsMixin, DialogsMixin, MeeseeksCore):
     async def scheduler_jobs(self):
         """Wraps scheduler jobs. """
 
-        await self.update_users()
-        await self.check_dates()
+        await self.update_users_job()
+        await self.check_dates_job()
 
         if settings.CHECK_USERS_AVATARS:
-            await self.check_users_avatars()
+            await self.check_users_avatars_job()
 
     @staticmethod
     def parse_crontab(crontab: str) -> dict[str, str]:

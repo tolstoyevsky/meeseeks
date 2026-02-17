@@ -32,3 +32,13 @@ USERS_LIST_REQUEST = '/users.list?count=0'
 USERS_INFO_REQUEST = '/users.info'
 
 USERS_SET_STATUS_REQUEST = '/users.setStatus'
+
+TRACEBACK_ALERT_MSG = (
+    "Oh! An unexpected error! :what:\n"
+    "I wasn’t ready for this! Nobody prepared me for this!\n"
+    "Here it is:"
+    "\n```\n{}\n```\n"
+    "Please fix it so I can complete my mission!"
+)
+
+TRACEBACK_ALERT_GROUP = 'HR'
