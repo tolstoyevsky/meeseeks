@@ -137,6 +137,16 @@ class HappyBirthder(CommandsMixin, DialogsMixin, MeeseeksCore):
                     user_fwd = datetime.strptime(user_info['createdAt'][:10], '%Y-%m-%d').date()
                     await user_in_base.update(fwd=user_fwd).apply()
 
+    @send_traceback
+    async def clean_users_job(self):
+        """Deletes users from Postgres that were removed from Rocket.Chat. """
+
+        server_users = await self._restapi.get_users()
+        bot_users = await User.query.gino.all()
+        for user in bot_users:
+            if user.user_id not in server_users:
+                await user.delete()
+
     async def prepare_users_info(self, users):
         """Return users info to use for checking dates. """
 
@@ -266,6 +276,7 @@ class HappyBirthder(CommandsMixin, DialogsMixin, MeeseeksCore):
     async def scheduler_jobs(self):
         """Wraps scheduler jobs. """
 
+        await self.clean_users_job()
         await self.update_users_job()
         await self.check_dates_job()
 
