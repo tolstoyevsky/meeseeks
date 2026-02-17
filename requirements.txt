@@ -7,3 +7,4 @@ psycopg2==2.9.3
 python-dotenv==0.19.1
 tabulate==0.8.9
 websockets==10.0
+setuptools==81.0.0
