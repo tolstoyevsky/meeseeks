@@ -23,6 +23,8 @@ GROUPS_INVITE_POST_REQUEST = '/groups.invite'
 
 GROUPS_MEMBERS_GET_REQUEST = '/groups.members'
 
+GROUPS_LIST_GET_REQUEST = '/groups.list'
+
 GROUP_INFO_GET_REQUEST = '/groups.info'
 
 ROOMS_GET_REQUEST = '/rooms.get'
