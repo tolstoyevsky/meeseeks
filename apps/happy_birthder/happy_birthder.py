@@ -226,6 +226,10 @@ class HappyBirthder(CommandsMixin, DialogsMixin, MeeseeksCore):
         persons_without_birthday = ''
         users_anniversary = ''
 
+        # In case if birthday group was already created
+        groups = await self._restapi.get_groups()
+        groups_names = [group_['name'] for group_ in groups]
+
         for user in users_info:
             is_birthday_group_ttl_expired = await self._check_birthday_group_ttl_expired(
                 user['birth_date'],
@@ -246,7 +250,8 @@ class HappyBirthder(CommandsMixin, DialogsMixin, MeeseeksCore):
                     await self._restapi.write_msg(f'@{user["name"]} is having a birthday tomorrow.',
                                                   user_id_for_mailing)
             elif (user['birth_date'].day == user['days_in_advance'].day and
-                    user['birth_date'].month == user['days_in_advance'].month):
+                    user['birth_date'].month == user['days_in_advance'].month and
+                    user['birthday_group_name'] not in groups_names):
                 await self.create_birthday_group(user)
                 for user_id_for_mailing in user['users_for_mailing'].keys():
                     await self._restapi.write_msg(
