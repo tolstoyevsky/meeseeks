@@ -23,6 +23,8 @@ GROUPS_INVITE_POST_REQUEST = '/groups.invite'
 
 GROUPS_MEMBERS_GET_REQUEST = '/groups.members'
 
+GROUPS_LIST_GET_REQUEST = '/groups.list'
+
 GROUP_INFO_GET_REQUEST = '/groups.info'
 
 ROOMS_GET_REQUEST = '/rooms.get'
@@ -32,3 +34,13 @@ USERS_LIST_REQUEST = '/users.list?count=0'
 USERS_INFO_REQUEST = '/users.info'
 
 USERS_SET_STATUS_REQUEST = '/users.setStatus'
+
+TRACEBACK_ALERT_MSG = (
+    "Oh! An unexpected error! :what:\n"
+    "I wasn’t ready for this! Nobody prepared me for this!\n"
+    "Here it is:"
+    "\n```\n{}\n```\n"
+    "Please fix it so I can complete my mission!"
+)
+
+TRACEBACK_ALERT_GROUP = 'HR'
