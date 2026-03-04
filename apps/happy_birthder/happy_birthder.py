@@ -2,6 +2,7 @@
 
 import asyncio
 import random
+import traceback
 from datetime import date, datetime, timedelta
 from urllib.parse import urljoin
 
@@ -84,7 +85,22 @@ class HappyBirthder(CommandsMixin, DialogsMixin, MeeseeksCore):
         self.gif_receiver = GifReceiver(settings.TENOR_API_KEY)
         self.scheduler = AsyncIOScheduler(settings.SCHEDULER_SETTINGS)
 
-    async def check_users_avatars(self):
+    @staticmethod
+    def send_traceback(func):
+        """Decorator handles unexpected exceptions and sends traceback to Rocket.Chat. """
+
+        async def wrapper(self, *args, **kwargs):
+            try:
+                await func(self, *args, **kwargs)
+            except Exception:  # pylint: disable=broad-exception-caught
+                alert_msg = settings.TRACEBACK_ALERT_MSG.format(traceback.format_exc())
+                await self._restapi.write_msg(alert_msg, settings.TRACEBACK_ALERT_GROUP)  # pylint: disable=protected-access
+                raise
+
+        return wrapper
+
+    @send_traceback
+    async def check_users_avatars_job(self):
         """Checks if the users set their avatars. """
 
         persons_without_avatar = ''
@@ -104,7 +120,8 @@ class HappyBirthder(CommandsMixin, DialogsMixin, MeeseeksCore):
                     settings.BIRTHDAY_LOGGING_CHANNEL,
                 )
 
-    async def update_users(self):
+    @send_traceback
+    async def update_users_job(self):
         """Receive all user in chat and updates information in database. """
 
         server_users = await self._restapi.get_users()
@@ -119,6 +136,16 @@ class HappyBirthder(CommandsMixin, DialogsMixin, MeeseeksCore):
                     user_info = await self._restapi.get_user_info(user['_id'])
                     user_fwd = datetime.strptime(user_info['createdAt'][:10], '%Y-%m-%d').date()
                     await user_in_base.update(fwd=user_fwd).apply()
+
+    @send_traceback
+    async def clean_users_job(self):
+        """Deletes users from Postgres that were removed from Rocket.Chat. """
+
+        server_users = await self._restapi.get_users()
+        bot_users = await User.query.gino.all()
+        for user in bot_users:
+            if user.user_id not in server_users:
+                await user.delete()
 
     async def prepare_users_info(self, users):
         """Return users info to use for checking dates. """
@@ -188,7 +215,8 @@ class HappyBirthder(CommandsMixin, DialogsMixin, MeeseeksCore):
             utcnow >= group_last_message_date + group_ttl
         )
 
-    async def check_dates(self):
+    @send_traceback
+    async def check_dates_job(self):
         """Check users birthdays, first working days. """
 
         users = await User.query.gino.all()
@@ -197,6 +225,10 @@ class HappyBirthder(CommandsMixin, DialogsMixin, MeeseeksCore):
         tomorrow = today + timedelta(days=1)
         persons_without_birthday = ''
         users_anniversary = ''
+
+        # In case if birthday group was already created
+        groups = await self._restapi.get_groups()
+        groups_names = [group_['name'] for group_ in groups]
 
         for user in users_info:
             is_birthday_group_ttl_expired = await self._check_birthday_group_ttl_expired(
@@ -218,7 +250,8 @@ class HappyBirthder(CommandsMixin, DialogsMixin, MeeseeksCore):
                     await self._restapi.write_msg(f'@{user["name"]} is having a birthday tomorrow.',
                                                   user_id_for_mailing)
             elif (user['birth_date'].day == user['days_in_advance'].day and
-                    user['birth_date'].month == user['days_in_advance'].month):
+                    user['birth_date'].month == user['days_in_advance'].month and
+                    user['birthday_group_name'] not in groups_names):
                 await self.create_birthday_group(user)
                 for user_id_for_mailing in user['users_for_mailing'].keys():
                     await self._restapi.write_msg(
@@ -248,11 +281,12 @@ class HappyBirthder(CommandsMixin, DialogsMixin, MeeseeksCore):
     async def scheduler_jobs(self):
         """Wraps scheduler jobs. """
 
-        await self.update_users()
-        await self.check_dates()
+        await self.clean_users_job()
+        await self.update_users_job()
+        await self.check_dates_job()
 
         if settings.CHECK_USERS_AVATARS:
-            await self.check_users_avatars()
+            await self.check_users_avatars_job()
 
     @staticmethod
     def parse_crontab(crontab: str) -> dict[str, str]:

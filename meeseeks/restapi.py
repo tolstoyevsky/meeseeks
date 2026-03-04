@@ -118,6 +118,16 @@ class RestAPI:
 
         return await self.make_request(settings.GROUPS_DELETE_POST_REQUEST, 'post', msg)
 
+    async def get_groups(self) -> list[dict[str, Any]]:
+        """Receives list of groups. """
+
+        response = await self.make_request(
+            f'{settings.GROUPS_LIST_GET_REQUEST}', 'get',
+        )
+        groups: list[dict[str, Any]] = response['groups']
+
+        return groups
+
     async def get_group_info(self, name: str) -> dict[str, Any]:
         """Receives info about group. """
 

@@ -2,6 +2,7 @@
 
 import asyncio
 import json
+import traceback
 from types import ModuleType
 from typing import Generic, Type, TypeVar
 from urllib.parse import ParseResult, urljoin, urlparse
@@ -201,6 +202,8 @@ class MeeseeksCore(Generic[_T]):
                     await self.loop()
                 except ClientResponseError as exc:
                     LOGGER.error(exc)
+                    alert_msg = settings.TRACEBACK_ALERT_MSG.format(traceback.format_exc())
+                    await self._restapi.write_msg(alert_msg, settings.TRACEBACK_ALERT_GROUP)
                 except ConnectionClosedOK:
                     LOGGER.info('ConnectionClosedOk, relogin ...')
                     self._websocket = await websockets.connect(websocket_url)
