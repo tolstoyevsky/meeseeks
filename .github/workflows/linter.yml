@@ -32,7 +32,7 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Run pylint
-        run: find -name "*.py" -not -path "./.git/*" -not -path "*/alembic/versions/*" -not -path "*/tests/*" | xargs pylint --rcfile=.pylintrc
+        run: pylint --rcfile=.pylintrc .
       - name: Run mypy
         run: mypy --exclude=tests/ --exclude=apps/ .
       - name: Run tests
@@ -46,4 +46,5 @@ jobs:
           PG_PORT: 5432
           PG_USER: postgres
           PG_PASSWORD: testpassword
+          GIPHY_API_KEY: dummy-giphy-key
         run: env PYTHONPATH=$(pwd) python3 tests/run_tests.py

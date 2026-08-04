@@ -1,5 +1,7 @@
 [MASTER]
 
+ignore=.git,tests,versions,.venv
+
 disable=duplicate-code,
         invalid-name,
         no-member,
