@@ -1,4 +1,9 @@
 [run]
- omit =
-   */tests/*
-   */apps/*
+source = apps/happy_birthder,meeseeks
+omit =
+    */tests/*
+    */.venv/*
+
+[report]
+show_missing = true
+skip_covered = false
