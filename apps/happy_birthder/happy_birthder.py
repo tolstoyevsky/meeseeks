@@ -4,7 +4,7 @@ import asyncio
 import random
 import traceback
 from datetime import date, datetime, timedelta
-from urllib.parse import urljoin
+from urllib.parse import quote, urljoin
 
 from aiohttp import ClientResponseError, ClientSession
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -17,59 +17,56 @@ from meeseeks.logger import LOGGER
 
 
 class GifReceiver:  # pylint: disable=too-few-public-methods
-    """Provide functionality for getting gifs from TenorAPI. """
+    """Provide functionality for getting GIFs from GIPHY. """
 
     def __init__(self, api_key):
         self._api_key = api_key
-        self._anon_id = ''
-
-    async def _get_anon_id(self):
-        if self._anon_id:
-            return self._anon_id
-
-        url = urljoin(settings.TENOR_API_URL, f'anonid?key={self._api_key}')
-        async with ClientSession(raise_for_status=True) as session:
-            response_raw = await session.get(url=url)
-            response = await response_raw.json()
-
-        self._anon_id = response['anon_id']
-
-        return self._anon_id
 
     @staticmethod
     def _get_random_tag():
-        return random.choice(settings.TENOR_SEARCH_TERM)
+        return random.choice(settings.GIPHY_SEARCH_TERMS)
 
     async def _get_gif_urls(self):
         tag = self._get_random_tag()
-        anon_id = await self._get_anon_id()
 
         url = urljoin(
-            settings.TENOR_API_URL,
-            f'search?tag={tag}&key={self._api_key}'
-            f'&limit={settings.TENOR_IMAGE_LIMIT}&anon_id={anon_id}',
+            settings.GIPHY_API_URL,
+            f'gifs/search?api_key={self._api_key}&q={quote(tag)}'
+            f'&limit={settings.GIPHY_IMAGE_LIMIT}'
+            f'&rating={settings.GIPHY_RATING}',
         )
         async with ClientSession(raise_for_status=True) as session:
             try:
                 response_raw = await session.get(url)
                 response = await response_raw.json()
-            except ClientResponseError:
+            except ClientResponseError as exc:
+                LOGGER.warning('GIPHY request failed for tag %s: %s', tag, exc)
                 return []
 
-        gifs: list = response['results']
+        gifs: list = response.get('data', [])
+        if not gifs:
+            LOGGER.warning('GIPHY returned no GIFs for tag %s', tag)
+            return []
+
         filtered_gifs = []
         for gif in gifs:
-            if gif['media'][0]['gif']['url'].split('/')[-2] in settings.TENOR_BLACKLISTED_GIF_IDS:
+            if gif['id'] in settings.GIPHY_BLACKLISTED_GIF_IDS:
                 continue
-            filtered_gifs.append(gif['media'][0]['gif']['url'])
+            filtered_gifs.append(gif['images']['original']['url'])
 
         return filtered_gifs
 
     async def get_random_gif_url(self):
-        """Takes random gif from list of gifs. """
+        """Takes random GIF from list of GIFs. """
 
-        gif_urls = await self._get_gif_urls()
-        return random.choice(gif_urls) if gif_urls else ''
+        for attempt in range(1, settings.GIPHY_MAX_ATTEMPTS + 1):
+            gif_urls = await self._get_gif_urls()
+            if gif_urls:
+                return random.choice(gif_urls)
+            LOGGER.debug('GIF fetch attempt %s returned no results, retrying', attempt)
+
+        LOGGER.warning('No GIF found after %s attempts', settings.GIPHY_MAX_ATTEMPTS)
+        return ''
 
 
 class HappyBirthder(CommandsMixin, DialogsMixin, MeeseeksCore):
@@ -82,7 +79,7 @@ class HappyBirthder(CommandsMixin, DialogsMixin, MeeseeksCore):
 
         self.__dict__.update(kwargs)
 
-        self.gif_receiver = GifReceiver(settings.TENOR_API_KEY)
+        self.gif_receiver = GifReceiver(settings.GIPHY_API_KEY)
         self.scheduler = AsyncIOScheduler(settings.SCHEDULER_SETTINGS)
 
     @staticmethod

@@ -58,24 +58,27 @@ SET_BIRTHDAY_RESPONSE = os.getenv(
     'I memorized you birthday, well done! :wink:'
 )
 
-# TenorAPI
+# GIPHY
 _CONGRATULATION_PHRASES = os.getenv('CONGRATULATION_PHRASES')
 CONGRATULATION_PHRASES = (_CONGRATULATION_PHRASES.split(',') if _CONGRATULATION_PHRASES
                           else CONGRATULATION_PHRASES)
 
-TENOR_API_KEY = os.environ['TENOR_API_KEY']
+GIPHY_API_KEY = os.environ['GIPHY_API_KEY']
 
-TENOR_API_URL = os.getenv('TENOR_API_URL', 'https://api.tenor.com/v1/')
+GIPHY_API_URL = os.getenv('GIPHY_API_URL', 'https://api.giphy.com/v1/')
 
-TENOR_IMAGE_LIMIT = int(os.getenv('TENOR_IMAGE_LIMIT', '5'))
+GIPHY_IMAGE_LIMIT = int(os.getenv('GIPHY_IMAGE_LIMIT', '5'))
 
-_TENOR_SEARCH_TERM = os.getenv('TENOR_SEARCH_TERM')
-TENOR_SEARCH_TERM = (_TENOR_SEARCH_TERM.split(',') if _TENOR_SEARCH_TERM else TENOR_SEARCH_TERM)
+_GIPHY_SEARCH_TERMS = os.getenv('GIPHY_SEARCH_TERMS')
+GIPHY_SEARCH_TERMS = (_GIPHY_SEARCH_TERMS.split(',') if _GIPHY_SEARCH_TERMS else GIPHY_SEARCH_TERMS)
 
+GIPHY_RATING = os.getenv('GIPHY_RATING', 'g')
 
-_TENOR_BLACKLISTED_GIF_IDS = os.getenv('TENOR_BLACKLISTED_GIF_IDS')
-TENOR_BLACKLISTED_GIF_IDS = (_TENOR_BLACKLISTED_GIF_IDS.split(',')
-                             if _TENOR_BLACKLISTED_GIF_IDS else [])
+GIPHY_MAX_ATTEMPTS = int(os.getenv('GIPHY_MAX_ATTEMPTS', '3'))
+
+_GIPHY_BLACKLISTED_GIF_IDS = os.getenv('GIPHY_BLACKLISTED_GIF_IDS')
+GIPHY_BLACKLISTED_GIF_IDS = (_GIPHY_BLACKLISTED_GIF_IDS.split(',')
+                             if _GIPHY_BLACKLISTED_GIF_IDS else [])
 
 # Scheduler
 HB_CRONTAB = os.getenv('HB_CRONTAB', '0 0 7 * * *')

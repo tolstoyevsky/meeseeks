@@ -42,12 +42,14 @@ env PYTHONPATH=$(pwd)/../.. alembic upgrade head
 The functionality of the script is divided into two parts: handling birthdays and work anniversaries.
 - Birthdays
   * Asking new employees to specify their date birth and reminding them about it if they ignore this request for some reason.
-  * Fetching a random GIF from [Tenor](https://tenor.com) before writing a birthday message to a birthday boy/girl. The `TENOR_SEARCH_TERM` environment variable stores a comma separated list of the tags which will be used when fetching GIFs. By default, the value of the variable is '[darthvaderbirthday](https://tenor.com/search/darthvaderbirthday), [futuramabirthday](https://tenor.com/search/futuramabirthday), [gameofthronesbirthday](https://tenor.com/search/gameofthronesbirthday), [harrypotterbirthday](https://tenor.com/search/harrypotterbirthday), [kingofthehillbirthday](https://tenor.com/search/kingofthehillbirthday), [lanadelreybirthday](https://tenor.com/search/lanadelreybirthday), [madhatterbirthday](https://tenor.com/search/madhatterbirthday), [pulpfictionbirthday](https://tenor.com/search/pulpfictionbirthday), [rickandmortybirthday](https://tenor.com/search/rickandmortybirthday), [rocketbirthday](https://tenor.com/search/rocketbirthday), [sheldonbirthday](https://tenor.com/search/sheldonbirthday), [simpsonbirthday](https://tenor.com/search/simpsonbirthday), [thesimpsonsbirthday](https://tenor.com/search/thesimpsonsbirthday), [tmntbirthday](https://tenor.com/search/tmntbirthday)'.
+  * Fetching a random GIF from [GIPHY](https://giphy.com) before writing a birthday message to a birthday boy/girl.
+    The bot picks a random tag from `GIPHY_SEARCH_TERMS`, searches GIPHY with `GIPHY_RATING`,
+    filters out `GIPHY_BLACKLISTED_GIF_IDS`, and attaches one random GIF from the results.
+    If GIPHY returns nothing or the request fails after `GIPHY_MAX_ATTEMPTS` retries,
+    the message is still sent without a GIF.
+    By default, `GIPHY_SEARCH_TERMS` is [darth vader birthday](https://giphy.com/search/darth%20vader%20birthday), [game of thrones birthday](https://giphy.com/search/game%20of%20thrones%20birthday), [futurama birthday](https://giphy.com/search/futurama%20birthday), [harry potter birthday](https://giphy.com/search/harry%20potter%20birthday), [king of the hill birthday](https://giphy.com/search/king%20of%20the%20hill%20birthday), [lana del rey birthday](https://giphy.com/search/lana%20del%20rey%20birthday), [mad hatter birthday](https://giphy.com/search/mad%20hatter%20birthday), [pulp fiction birthday](https://giphy.com/search/pulp%20fiction%20birthday), [rick and morty birthday](https://giphy.com/search/rick%20and%20morty%20birthday), [rocket birthday](https://giphy.com/search/rocket%20birthday), [sheldon birthday](https://giphy.com/search/sheldon%20birthday), [simpson birthday](https://giphy.com/search/simpson%20birthday), [the simpsons birthday](https://giphy.com/search/the%20simpsons%20birthday), [tmnt birthday](https://giphy.com/search/tmnt%20birthday), [south park birthday](https://giphy.com/search/south%20park%20birthday).
   * Writing birthday messages to `#general`.
   * Reminding users of the upcoming birthdays one day and a few days in advance. It's possible to specify how long before the event occurs the reminder should be triggered.
-  * Providing fault tolerance:
-    + if Tenor is for some reason unavailable right now, the script will try to request it a number of times with delays;
-    + if all the requests failed, users will receive their birthday messages anyway.
   * Creating private channels in advance and inviting all the users to the channels except the birthday boys/girls for the purpose of discussing the presents for them. Expired channels are automatically removed.
 - Work anniversaries
   * Memorizing the date when a new employee logs in to Rocket.Chat for the first time (the date is equal to the first working day in the company).
@@ -73,10 +75,13 @@ The functionality of the script is divided into two parts: handling birthdays an
 | `PASSWORD` | Password of your bot | |
 | `USER_NAME` | User name of your bot | |
 | `CONNECT_ATTEMPTS` | Number of attempts to start on failure | |
-| `TENOR_API_KEY` | Сlient key for privileged API access. This is the only **mandatory** parameter. | |
-| `TENOR_BLACKLIST` | A comma separated list of the GIFs ids which will be excluded when choosing one from the list returned by Tenor. If the script randomly chooses a GIF from the response which belongs to the blacklist, the script sends one more request to Tenor. | |
-| `TENOR_IMAGE_LIMIT` | Fetches up to the specified number of result, but not more than **50**. | 5 |
-| `TENOR_SEARCH_TERM` | A comma separated list of tags which will be used when fetching GIFs from Tenor. | See [Features](#features) |
+| `GIPHY_API_KEY` | Client key for GIPHY API access. This is the only **mandatory** parameter. | |
+| `GIPHY_API_URL` | GIPHY API base URL. | `https://api.giphy.com/v1/` |
+| `GIPHY_BLACKLISTED_GIF_IDS` | A comma separated list of the GIPHY GIF IDs which will be excluded when choosing one from the search results. | |
+| `GIPHY_IMAGE_LIMIT` | Fetches up to the specified number of results, but not more than **50**. | 5 |
+| `GIPHY_RATING` | Content rating for GIPHY search results. Allowed values: `g`, `pg`, `pg-13`, `r`. | `g` |
+| `GIPHY_SEARCH_TERMS` | A comma separated list of tags which will be used when fetching GIFs from GIPHY. | See [Features](#features) |
+| `GIPHY_MAX_ATTEMPTS` | Number of retries with a different random tag before giving up on fetching a GIF. | 3 |
 | `CREATE_BIRTHDAY_CHANNELS` | Specifies whether to create the birthday channels for the purpose of discussing presents for birthday boys/girls. All the users are invited to the channel except the birthday boy/girl. | False |
 | `BIRTHDAY_CHANNEL_BLACKLIST` | A comma separated list of the users which won't be invited to the birthday channel when it's created. | |
 | `BIRTHDAY_CHANNEL_TTL` | Specifies TTL (time to live) of the birthday channel. | 3 |
