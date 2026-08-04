@@ -6,6 +6,7 @@ from tests.test_commands_base import TestCommunication, TestCommandsBase, TestDi
 from tests.test_commands_mixins import TestCommandsMixin
 from tests.test_context import TestContext, TestContextRoom, TestContextUser
 from tests.test_core import TestMeeseeksCore
+from tests.test_happy_birthder import TestGifReceiver
 from tests.test_meeseeks_app import TestMeeseeksBaseApp
 from tests.test_restapi import TestRestAPI
 from tests.test_serializers import TestContextFactory
