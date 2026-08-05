@@ -5,18 +5,16 @@
 
 * Python 3.10. If older version is installed on the machine, it is recommended to use [pyenv](https://github.com/pyenv/).
 * Docker, installation instructions can be found [here](https://docs.docker.com/install/linux/docker-ce/ubuntu/#install-docker-engine---community-1).
-* virtualenv, which can be installed by running `sudo apt-get install virtualenv`.
+* [uv](https://docs.astral.sh/uv/getting-started/installation/), for dependency management and command execution.
 
 ## Installation
 
-### Virtual environment:
+### Python environment and dependencies
 
-* Create virtual environment, activate it and install requirements:
+* Install dependencies with `uv`:
 ```bash
-virtualenv -ppython3.10 meeseeks-env
-source ./meeseeks-env/bin/activate
 cd meeseeks
-pip3 install -r requirements.txt
+uv sync --group lint
 ```
 
 ### happy_birthder setup
@@ -28,14 +26,14 @@ pip3 install -r requirements.txt
 * Apply migrations to module database:
 ```bash
 cd apps/happy_birthder
-env PYTHONPATH=$(pwd)/../.. alembic upgrade head
+env PYTHONPATH=$(pwd)/../.. uv run alembic upgrade head
 ```
 
 ### Run of the project
 
 * Run from main project directory
 
-`env PYTHONPATH=$(pwd) python3 manage.py`
+`env PYTHONPATH=$(pwd) uv run python manage.py`
 
 ## Features
 
