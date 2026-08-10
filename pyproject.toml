@@ -1,0 +1,27 @@
+[project]
+name = "meeseeks"
+version = "0.1.0"
+description = "Corporate bot for Rocket.Chat"
+readme = "README.md"
+requires-python = ">=3.10,<3.11"
+dependencies = [
+    "aiohttp==3.8.1",
+    "alembic==1.7.5",
+    "apscheduler==3.8.1",
+    "configparser==5.2.0",
+    "gino==1.0.1",
+    "psycopg2-binary==2.9.3",
+    "python-dotenv==0.19.1",
+    "setuptools==81.0.0",
+    "tabulate==0.8.9",
+    "websockets==10.0",
+]
+
+[dependency-groups]
+lint = [
+    "pylint",
+    "mypy @ git+https://github.com/python/mypy.git@40bbfb5f2539f6fc3ea8c9b4de6b62d167bb003f",
+]
+
+[tool.uv]
+package = false
